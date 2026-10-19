@@ -1,0 +1,226 @@
+/*
+ * YouTube Manager on a phone — the stylesheet for pages-mobile.js.
+ *
+ * m.youtube.com marks its dark theme with a `dark` attribute on <html>;
+ * www.youtube.com (desktop site) the same. Everything below reads the colours
+ * from these variables so both themes come out right.
+ */
+:root {
+  --ytct-bg: #ffffff;
+  --ytct-fg: #0f0f0f;
+  --ytct-dim: #606060;
+  --ytct-line: rgba(0, 0, 0, 0.16);
+  --ytct-accent: #cc0000;
+  --ytct-chip: rgba(0, 0, 0, 0.05);
+}
+html[dark],
+html[darker-dark-theme] {
+  --ytct-bg: #212121;
+  --ytct-fg: #f1f1f1;
+  --ytct-dim: #aaaaaa;
+  --ytct-line: rgba(255, 255, 255, 0.2);
+  --ytct-accent: #ff4e45;
+  --ytct-chip: rgba(255, 255, 255, 0.1);
+}
+
+/* ---------------------------------------------------------------- hiding */
+
+.ytct-video-hidden {
+  display: none !important;
+}
+
+/*
+ * While a subscriptions tab is picked a card has to earn its place: anything
+ * pages-mobile.js has not marked as belonging is off screen, including cards
+ * YouTube has only just added and nothing has judged yet.
+ */
+:root.ytct-tabbed ytm-video-with-context-renderer:not([data-ytct-tab]):not([data-ytct-tab] *),
+:root.ytct-tabbed ytm-compact-video-renderer:not([data-ytct-tab]):not([data-ytct-tab] *),
+:root.ytct-tabbed ytm-rich-item-renderer:not([data-ytct-tab]):not([data-ytct-tab] *),
+:root.ytct-tabbed ytm-video-card-renderer:not([data-ytct-tab]):not([data-ytct-tab] *),
+:root.ytct-tabbed ytd-rich-item-renderer:not([data-ytct-tab]):not([data-ytct-tab] *) {
+  /* The second :not spares a card nested inside one that did earn it —
+     only the outer card is ever marked. */
+  display: none !important;
+}
+
+/* ----------------------------------------------------------- card buttons */
+
+.ytct-m-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  /* Lines up with the title, which sits right of the 36px channel avatar. */
+  padding: 2px 12px 10px 60px;
+}
+ytm-compact-channel-renderer .ytct-m-row,
+ytm-rich-item-renderer .ytct-m-row {
+  padding-left: 12px;
+}
+
+.ytct-m-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--ytct-line);
+  border-radius: 999px;
+  background: var(--ytct-chip);
+  color: var(--ytct-fg);
+  font: 500 12px/1 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.03em;
+  -webkit-tap-highlight-color: transparent;
+}
+.ytct-m-btn:active {
+  border-color: var(--ytct-accent);
+  color: var(--ytct-accent);
+}
+.ytct-m-shut {
+  color: var(--ytct-accent);
+}
+.ytct-m-shut.ytct-on {
+  background: var(--ytct-accent);
+  border-color: var(--ytct-accent);
+  color: #fff;
+}
+.ytct-m-chat {
+  border-color: var(--ytct-accent);
+}
+
+/* Beside Subscribe under a video, and on a channel's header. */
+.ytct-m-sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-inline: 6px;
+  flex: none;
+}
+.ytct-m-sub:empty {
+  display: none;
+}
+
+/* --------------------------------------------------- subscriptions feed */
+
+.ytct-m-feedbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+}
+.ytct-m-tabs {
+  display: flex;
+  gap: 8px;
+  flex: 1 1 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.ytct-m-tab {
+  flex: none;
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--ytct-line);
+  border-radius: 8px;
+  background: var(--ytct-chip);
+  color: var(--ytct-fg);
+  font: 500 14px/1 Roboto, system-ui, sans-serif;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+.ytct-m-tab.ytct-on {
+  background: var(--ytct-fg);
+  border-color: var(--ytct-fg);
+  color: var(--ytct-bg);
+}
+.ytct-m-shorts {
+  font-size: 12px;
+  min-height: 28px;
+}
+.ytct-m-shorts:not(.ytct-on) {
+  color: var(--ytct-dim);
+}
+.ytct-m-empty {
+  flex: 1 1 100%;
+  margin: 24px 0;
+  color: var(--ytct-dim);
+  font: 400 15px/1.4 Roboto, system-ui, sans-serif;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------ tag sheet */
+
+#ytct-m-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(0, 0, 0, 0.45);
+}
+.ytct-m-sheet-panel {
+  width: 100%;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  border-radius: 12px 12px 0 0;
+  background: var(--ytct-bg);
+  color: var(--ytct-fg);
+}
+.ytct-m-sheet-head {
+  margin: 8px 20px 10px;
+  color: var(--ytct-dim);
+  font: 500 13px/1.4 Roboto, system-ui, sans-serif;
+}
+.ytct-m-sheet-row {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 0;
+  background: transparent;
+  color: var(--ytct-fg);
+  font: 400 16px/48px Roboto, system-ui, sans-serif;
+  text-align: start;
+}
+.ytct-m-sheet-row.ytct-on::after {
+  content: "✓";
+  float: right;
+  color: var(--ytct-accent);
+}
+.ytct-m-sheet-cancel {
+  color: var(--ytct-dim);
+  border-top: 1px solid var(--ytct-line);
+}
+
+/* ------------------------------------------------------------------ toast */
+
+#ytct-page-toast {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  /* Above the Home / Shorts / Subscriptions bar at the bottom of the app. */
+  bottom: calc(64px + env(safe-area-inset-bottom));
+  z-index: 10001;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--ytct-fg);
+  color: var(--ytct-bg);
+  font: 500 14px/1.4 Roboto, system-ui, sans-serif;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+#ytct-page-toast.ytct-toast-show {
+  display: flex;
+}
+#ytct-page-toast button {
+  border: 0;
+  background: transparent;
+  color: #3ea6ff;
+  font: 500 14px/1 Roboto, system-ui, sans-serif;
+  text-transform: uppercase;
+  padding: 6px 4px;
+}

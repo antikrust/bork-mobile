@@ -1,0 +1,76 @@
+{
+  "manifest_version": 2,
+  "name": "YouTube Manager",
+  "version": "0.2.40.2",
+  "description": "Organise YouTube on your phone: block channels from home, search and the watch page, sort your subscriptions into tabs of your own, toggle Shorts, and tame live chat with word and author filters, blocking and a threaded view.",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png",
+    "128": "icons/icon-128.png"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/live_chat*",
+        "https://www.youtube.com/live_chat_replay*",
+        "https://m.youtube.com/live_chat*",
+        "https://m.youtube.com/live_chat_replay*"
+      ],
+      "all_frames": true,
+      "run_at": "document_idle",
+      "js": [
+        "src/channels.js",
+        "src/store.js",
+        "src/filters.js",
+        "src/threads.js",
+        "src/content.js"
+      ],
+      "css": [
+        "src/ui.css",
+        "src/ui-mobile.css"
+      ]
+    },
+    {
+      "matches": [
+        "https://m.youtube.com/*",
+        "https://www.youtube.com/*"
+      ],
+      "run_at": "document_idle",
+      "js": [
+        "src/channels.js",
+        "src/store.js",
+        "src/filters.js",
+        "src/pages-mobile.js"
+      ],
+      "css": [
+        "src/pages-mobile.css"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    "options/options.html"
+  ],
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "browser_action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "YouTube Manager",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "youtube-manager@bork",
+      "strict_min_version": "115.0"
+    }
+  }
+}

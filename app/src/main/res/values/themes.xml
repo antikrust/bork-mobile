@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Bork" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/bork_accent</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">@color/bork_pink</item>
+        <item name="colorSurface">@color/bork_surface</item>
+        <item name="colorOnSurface">@color/bork_fg</item>
+        <item name="colorSurfaceContainer">@color/bork_surface</item>
+        <item name="colorSurfaceContainerHigh">@color/bork_surface_hi</item>
+        <item name="colorSurfaceContainerLow">@color/bork_surface</item>
+        <item name="android:colorBackground">@color/bork_bg</item>
+        <item name="android:windowBackground">@color/bork_bg</item>
+        <item name="android:statusBarColor">@color/bork_surface</item>
+        <item name="android:navigationBarColor">@color/bork_surface</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="bottomSheetDialogTheme">@style/Theme.Bork.BottomSheet</item>
+        <item name="materialAlertDialogTheme">@style/Theme.Bork.Dialog</item>
+    </style>
+
+    <style name="Theme.Bork.BottomSheet" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Bork.BottomSheet</item>
+        <item name="android:navigationBarColor">@color/bork_surface</item>
+    </style>
+
+    <style name="Bork.BottomSheet" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">@color/bork_surface</item>
+    </style>
+
+    <style name="Theme.Bork.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">@color/bork_surface_hi</item>
+    </style>
+
+    <style name="Bork.IconButton" parent="">
+        <item name="android:layout_width">44dp</item>
+        <item name="android:layout_height">44dp</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="tint">@color/bork_fg</item>
+    </style>
+</resources>

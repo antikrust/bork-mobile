@@ -1,0 +1,24 @@
+/*
+ * bork-mobile only: the live chat panel at finger size.
+ *
+ * ui.css is the desktop stylesheet, loaded unchanged before this. Nothing in
+ * it is wrong on a phone — a tap gives a message :hover, which is what shows
+ * its SHUT UP button — but its hit targets are cursor-sized. This only makes
+ * them bigger.
+ */
+.ytct-shutup {
+  min-height: 28px;
+  padding-inline: 10px !important;
+  font-size: 12px !important;
+}
+
+#ytct-threads-btn {
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.ytct-head-btn,
+.ytct-bar-btn,
+.ytct-tab {
+  min-height: 34px;
+}

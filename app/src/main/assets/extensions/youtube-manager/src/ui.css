@@ -1,0 +1,398 @@
+/*
+ * Injected into the live_chat iframe.
+ *
+ * Colours follow YouTube's own theme signal: it stamps a `dark` attribute on
+ * <html> when the dark theme is on, which is more reliable here than
+ * prefers-color-scheme (the reader may run YouTube dark on a light system).
+ * prefers-color-scheme is kept as the fallback for the first paint.
+ */
+
+:root {
+  --ytct-bg: #ffffff;
+  --ytct-panel-bg: #f7f7f8;
+  --ytct-fg: #0f0f0f;
+  --ytct-dim: #606060;
+  --ytct-line: rgba(0, 0, 0, 0.12);
+  --ytct-accent: #c00;
+  --ytct-reply-line: rgba(0, 0, 0, 0.18);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ytct-bg: #0f0f0f;
+    --ytct-panel-bg: #131314;
+    --ytct-fg: #f1f1f1;
+    --ytct-dim: #aaa;
+    --ytct-line: rgba(255, 255, 255, 0.14);
+    --ytct-accent: #ff4e45;
+    --ytct-reply-line: rgba(255, 255, 255, 0.22);
+  }
+}
+
+:root[dark] {
+  --ytct-bg: #0f0f0f;
+  --ytct-panel-bg: #131314;
+  --ytct-fg: #f1f1f1;
+  --ytct-dim: #aaa;
+  --ytct-line: rgba(255, 255, 255, 0.14);
+  --ytct-accent: #ff4e45;
+  --ytct-reply-line: rgba(255, 255, 255, 0.22);
+}
+
+/* --------------------------------------------------------------- filtering */
+
+/*
+ * !important throughout: YouTube's own styles are more specific than anything
+ * a class on the element can be, and losing this particular fight means a
+ * message you asked to never see again stays on screen.
+ */
+.ytct-hidden {
+  display: none !important;
+}
+
+/* Collapsed mode: keep a one-line stub so a mis-typed rule is visible. */
+.ytct-collapsed > #content,
+.ytct-collapsed > #card {
+  display: none !important;
+}
+
+.ytct-collapsed::after {
+  content: attr(data-ytct-reason);
+  display: block;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: var(--ytct-dim);
+  font-style: italic;
+  opacity: 0.75;
+}
+
+/* ------------------------------------------------------------ SHUT UP button */
+
+/* The renderer is the positioning context for our button. */
+yt-live-chat-text-message-renderer,
+yt-live-chat-paid-message-renderer,
+yt-live-chat-paid-sticker-renderer,
+yt-live-chat-membership-item-renderer {
+  position: relative;
+}
+
+.ytct-shutup {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  z-index: 5;
+  display: none;
+  padding: 1px 6px;
+  border: 1px solid var(--ytct-accent);
+  border-radius: 999px;
+  background: var(--ytct-bg);
+  color: var(--ytct-accent);
+  font: 600 10px/1.6 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.ytct-shutup:hover {
+  background: var(--ytct-accent);
+  color: #fff;
+}
+
+:root.ytct-buttons yt-live-chat-text-message-renderer:hover .ytct-shutup,
+:root.ytct-buttons yt-live-chat-paid-message-renderer:hover .ytct-shutup,
+:root.ytct-buttons yt-live-chat-paid-sticker-renderer:hover .ytct-shutup,
+:root.ytct-buttons yt-live-chat-membership-item-renderer:hover .ytct-shutup {
+  display: inline-flex;
+}
+
+/* --------------------------------------------------- Threads button in the bar */
+
+/*
+ * Lives in YouTube's own button strip beside the emoji picker, so it reads as
+ * part of the chat rather than something floating over the conversation.
+ */
+/*
+ * Sized and shaped like YouTube's own emoji and heart buttons — 40px circle,
+ * borderless, icon inheriting colour — so it reads as one of the chat's
+ * controls rather than something bolted beside them.
+ */
+#ytct-threads-btn {
+  align-self: center;
+  flex: none;
+  /* YouTube's chat controls each bring their own 8px gap; without this the
+     button sits flush against the one before it. */
+  margin-inline-start: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--ytct-fg);
+  cursor: pointer;
+}
+
+#ytct-threads-btn:hover {
+  filter: brightness(1.4);
+}
+
+#ytct-threads-btn.ytct-active {
+  background: var(--ytct-accent);
+  color: #fff;
+}
+
+.ytct-head-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.ytct-head-btn,
+.ytct-bar-btn {
+  padding: 2px 8px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ytct-dim);
+  font: 600 11px/1.6 Roboto, system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.ytct-head-btn:hover,
+.ytct-bar-btn:hover {
+  background: var(--ytct-line);
+  color: var(--ytct-fg);
+}
+
+/* --------------------------------------------------------------- thread panel */
+
+#ytct-panel {
+  position: fixed;
+  inset: 0 0 0 0;
+  z-index: 9997;
+  display: none;
+  flex-direction: column;
+  background: var(--ytct-panel-bg);
+  color: var(--ytct-fg);
+}
+
+:root.ytct-panel-open #ytct-panel {
+  display: flex;
+}
+
+.ytct-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--ytct-line);
+  font: 600 12px/1.6 Roboto, system-ui, sans-serif;
+  color: var(--ytct-dim);
+}
+
+#ytct-panel-list,
+#ytct-hidden-list {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px 8px 40px;
+}
+
+#ytct-panel[data-view="threads"] #ytct-hidden-list,
+#ytct-panel[data-view="hidden"] #ytct-panel-list {
+  display: none;
+}
+
+/* ------------------------------------------------------------ tabs + hidden */
+
+.ytct-tabs {
+  display: flex;
+  gap: 2px;
+}
+
+.ytct-tab {
+  padding: 2px 9px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ytct-dim);
+  font: 600 11px/1.6 Roboto, system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.ytct-tab:hover {
+  background: var(--ytct-line);
+  color: var(--ytct-fg);
+}
+
+.ytct-tab.ytct-active {
+  background: var(--ytct-line);
+  color: var(--ytct-fg);
+}
+
+.ytct-hidden-row {
+  margin-bottom: 6px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--ytct-line);
+  font: 400 12px/1.35 Roboto, system-ui, sans-serif;
+}
+
+.ytct-hidden-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ytct-hidden-head .ytct-msg-btn {
+  display: block;
+  margin-inline-start: auto;
+}
+
+.ytct-hidden-text {
+  margin-top: 1px;
+  color: var(--ytct-dim);
+  word-wrap: break-word;
+}
+
+.ytct-badge {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--ytct-line);
+  color: var(--ytct-dim);
+  font: 600 9px/1.8 Roboto, system-ui, sans-serif;
+  white-space: nowrap;
+}
+
+.ytct-badge-banword,
+.ytct-badge-author {
+  background: var(--ytct-accent);
+  color: #fff;
+}
+
+.ytct-empty {
+  padding: 12px 4px;
+  color: var(--ytct-dim);
+  font: 400 12px/1.5 Roboto, system-ui, sans-serif;
+}
+
+.ytct-thread {
+  margin: 0 0 4px;
+  padding: 2px 0 0;
+  border-top: 1px solid var(--ytct-line);
+}
+
+.ytct-thread:first-child {
+  border-top: 0;
+}
+
+.ytct-replies {
+  margin: 0 0 0 8px;
+  padding-left: 7px;
+  border-left: 2px solid var(--ytct-reply-line);
+}
+
+.ytct-msg {
+  position: relative;
+  padding: 1px 2px;
+  font: 400 13px/1.3 Roboto, system-ui, sans-serif;
+  word-wrap: break-word;
+}
+
+.ytct-msg-reply {
+  color: var(--ytct-fg);
+  opacity: 0.95;
+}
+
+.ytct-msg-blocked {
+  display: none;
+}
+
+/* A thread whose every message is blocked has nothing to say. */
+.ytct-thread:not(:has(.ytct-msg:not(.ytct-msg-blocked))) {
+  display: none;
+}
+
+.ytct-msg-author {
+  margin-right: 5px;
+  font-weight: 600;
+}
+
+/* Emoji carried over from the chat; sized to ride in the text line. */
+.ytct-emoji {
+  height: 16px;
+  width: auto;
+  vertical-align: text-bottom;
+}
+
+/*
+ * Buttons float over the text on hover rather than reserving a gutter: a
+ * permanent 74px of right padding for two buttons costs every message a line
+ * wrap in a column this narrow, which is the opposite of readable.
+ */
+.ytct-msg-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: none;
+  gap: 3px;
+  padding-left: 8px;
+  background: linear-gradient(to right, transparent, var(--ytct-panel-bg) 8px);
+}
+
+.ytct-msg:hover .ytct-msg-actions {
+  display: flex;
+}
+
+.ytct-msg-btn {
+  padding: 0 6px;
+  border: 1px solid var(--ytct-line);
+  border-radius: 999px;
+  background: var(--ytct-panel-bg);
+  color: var(--ytct-dim);
+  font: 600 9px/1.7 Roboto, system-ui, sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ytct-msg-btn:hover {
+  border-color: var(--ytct-fg);
+  color: var(--ytct-fg);
+}
+
+.ytct-msg-mute {
+  border-color: var(--ytct-accent);
+  color: var(--ytct-accent);
+}
+
+.ytct-msg-mute:hover {
+  border-color: var(--ytct-accent);
+  background: var(--ytct-accent);
+  color: #fff;
+}
+
+/* --------------------------------------------------------------------- toast */
+
+#ytct-toast {
+  position: fixed;
+  left: 8px;
+  right: 8px;
+  bottom: 44px;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--ytct-line);
+  border-radius: 8px;
+  background: var(--ytct-bg);
+  color: var(--ytct-fg);
+  font: 500 11px/1.5 Roboto, system-ui, sans-serif;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+#ytct-toast.ytct-toast-show {
+  display: flex;
+}

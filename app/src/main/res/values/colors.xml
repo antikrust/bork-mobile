@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- bork's compact dark chrome (skin/bork/css/bork.css). -->
+    <color name="bork_bg">#050506</color>
+    <color name="bork_surface">#131317</color>
+    <color name="bork_surface_hi">#1E1E24</color>
+    <color name="bork_field">#26262C</color>
+    <color name="bork_line">#2E2E36</color>
+    <color name="bork_fg">#ECECEF</color>
+    <color name="bork_dim">#9A9AA4</color>
+    <color name="bork_accent">#0A84FF</color>
+    <color name="bork_pink">#FF4AA2</color>
+    <color name="bork_private">#3B1F5C</color>
+</resources>

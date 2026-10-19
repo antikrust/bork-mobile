@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bork_surface">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- The address bar lives here, or in bottomBar when it is set to the bottom. -->
+        <FrameLayout
+            android:id="@+id/topBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <FrameLayout
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@color/bork_bg">
+
+            <org.mozilla.geckoview.GeckoView
+                android:id="@+id/gecko"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/start"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/bork_bg"
+                android:fillViewport="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="16dp"
+                    android:paddingTop="56dp"
+                    android:paddingBottom="24dp">
+
+                    <ImageView
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:contentDescription="@null"
+                        android:src="@mipmap/ic_launcher" />
+
+                    <TextView
+                        android:id="@+id/startWordmark"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="bork"
+                        android:textColor="@color/bork_fg"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/startSearch"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="28dp"
+                        android:background="@drawable/bg_field"
+                        android:drawablePadding="10dp"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="14dp"
+                        android:text="@string/start_search_hint"
+                        android:textColor="@color/bork_dim"
+                        android:textSize="16sp"
+                        app:drawableStartCompat="@drawable/ic_search"
+                        app:drawableTint="@color/bork_dim" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/tiles"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="28dp"
+                        android:nestedScrollingEnabled="false" />
+
+                    <TextView
+                        android:id="@+id/startHint"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:gravity="center"
+                        android:text="Star a page to pin it here. Long-press a tile to edit it."
+                        android:textColor="@color/bork_dim"
+                        android:textSize="13sp" />
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/suggestions"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/bork_bg"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/bottomBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/bork_surface"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/findBar"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="8dp"
+                android:visibility="gone">
+
+                <EditText
+                    android:id="@+id/findText"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_field"
+                    android:hint="Find in page"
+                    android:imeOptions="actionSearch"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:paddingHorizontal="12dp"
+                    android:textColor="@color/bork_fg"
+                    android:textColorHint="@color/bork_dim"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/findCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="48dp"
+                    android:gravity="center"
+                    android:textColor="@color/bork_dim"
+                    android:textSize="13sp" />
+
+                <ImageButton
+                    android:id="@+id/findPrev"
+                    style="@style/Bork.IconButton"
+                    android:contentDescription="Previous"
+                    android:src="@drawable/ic_up" />
+
+                <ImageButton
+                    android:id="@+id/findNext"
+                    style="@style/Bork.IconButton"
+                    android:contentDescription="Next"
+                    android:src="@drawable/ic_down" />
+
+                <ImageButton
+                    android:id="@+id/findClose"
+                    style="@style/Bork.IconButton"
+                    android:contentDescription="Close find"
+                    android:src="@drawable/ic_close" />
+            </LinearLayout>
+
+            <FrameLayout
+                android:id="@+id/bottomToolbarSlot"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout
+                android:id="@+id/navBar"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/navBack"
+                    style="@style/Bork.IconButton"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:contentDescription="Back"
+                    android:src="@drawable/ic_back" />
+
+                <ImageButton
+                    android:id="@+id/navForward"
+                    style="@style/Bork.IconButton"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:contentDescription="Forward"
+                    android:src="@drawable/ic_forward" />
+
+                <ImageButton
+                    android:id="@+id/navHome"
+                    style="@style/Bork.IconButton"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:contentDescription="Start page"
+                    android:src="@drawable/ic_home" />
+
+                <FrameLayout
+                    android:id="@+id/navTabs"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Tabs and workspaces">
+
+                    <TextView
+                        android:id="@+id/tabCount"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/bg_tab_count"
+                        android:gravity="center"
+                        android:text="1"
+                        android:textColor="@color/bork_fg"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </FrameLayout>
+
+                <ImageButton
+                    android:id="@+id/navMenu"
+                    style="@style/Bork.IconButton"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:contentDescription="Menu"
+                    android:src="@drawable/ic_menu" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Zen mode's only chrome: one dot to come back with. Mid-right, because
+         sites put their own menus in the top corners. -->
+    <ImageButton
+        android:id="@+id/zenExit"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_vertical|end"
+        android:layout_marginEnd="6dp"
+        android:alpha="0.45"
+        android:background="@drawable/bg_pill"
+        android:contentDescription="Leave zen mode"
+        android:padding="9dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_zen"
+        android:visibility="gone"
+        app:tint="@color/bork_fg" />
+</FrameLayout>

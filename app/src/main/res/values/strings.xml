@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">bork</string>
+    <string name="url_hint">Search or type a URL</string>
+    <string name="start_search_hint">Search the web</string>
+</resources>
