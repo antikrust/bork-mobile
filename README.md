@@ -1,44 +1,52 @@
 # bork mobile
 
-bork for Android: the same Gecko engine as the desktop build, so the same
-**Manifest V2 extensions** — the complete **uBlock Origin**, not the Lite
-version — plus bork's own add-ons, on a phone.
+bork for phones: **Android** and **iOS**, one repo, the same add-ons.
 
-It is a GeckoView app, not a Fenix fork: a small browser shell written for
-bork, around the Gecko engine Mozilla ships as a library.
+```
+android/            Gecko (GeckoView) app — Kotlin
+ios/                WebKit app — Swift, UIKit
+shared/extensions/  bork's add-ons, used by both
+tools/              add-on sync, blocklist builder
+tests/              host tests for the mobile YouTube script
+```
 
-## What it does
+The two are not the same browser. **Android runs Gecko**, Firefox's
+engine, so Manifest V2 extensions run there for real: the complete
+**uBlock Origin**, not the Lite version, plus Dark Reader and bork's own
+add-ons. **iOS allows no engine but WebKit**, and WebKit runs no
+extensions inside an app — so the iOS app carries bork's own two add-ons on
+a small extension runtime of its own, and blocks ads with WebKit's content
+rule lists instead of uBlock. Everything else — workspaces, zen mode, the
+start page, the look — is the same on both.
+
+## What both do
 
 - **Workspaces** — named sets of tabs, like the desktop's. Switch them from
-  the chips along the top of the tab tray; long-press a tab to move it to
-  another workspace, long-press a workspace to rename or delete it. The badge
-  left of the address bar shows which one you are in (tap it for the tray,
-  long-press to jump straight to another workspace).
-- **Zen mode** — toolbars and status bar gone, only the page. A faint dot on
-  the right edge brings them back.
-- **Start page** — pinned sites as tiles. Star a page from the menu to pin
-  it; long-press a tile to rename, reorder or unpin it.
+  the chips at the top of the tab tray; long-press a tab to move it to
+  another workspace, long-press a workspace to rename or delete it. The
+  badge left of the address bar shows which one you are in (tap it for the
+  tray, long-press it to jump to another).
+- **Zen mode** — toolbars and status bar gone, only the page. A faint dot
+  on the right edge brings them back.
+- **Start page** — pinned sites as tiles. Pin a page from the menu;
+  long-press a tile to rename, reorder or unpin it.
 - **Private tabs**, **desktop site** per tab, **find in page**, downloads,
-  bookmarks and history (kept on the phone and nowhere else), and the
-  address bar at the bottom if you prefer it there (Settings).
-- **No telemetry, no crash reports, no accounts.** Tracking protection and
-  Global Privacy Control are always on; Safe Browsing is on, as on the
-  desktop.
+  bookmarks and history (on the phone and nowhere else), tabs that come
+  back after a restart, the address bar at the bottom if you prefer it.
+- **No telemetry, no crash reports, no accounts.**
 
-### Add-ons that ship
+## Add-ons
 
-| | |
-|---|---|
-| **uBlock Origin** | the AMO-signed build the desktop ships, full MV2 |
-| **Dark Reader** | likewise |
-| **YouTube Manager** | bork's own, ported to m.youtube.com — see below |
-| **Cyberswine** | bork's own, unchanged but for a shim (see below) |
+| | Android | iOS |
+|---|---|---|
+| **uBlock Origin** | the AMO-signed build the desktop ships, full MV2 | — (WebKit cannot run it); EasyList + EasyPrivacy as a WebKit content blocker instead, with a per-site off switch |
+| **Dark Reader** | yes | — |
+| **YouTube Manager** | yes, ported to m.youtube.com (below) | yes, the same files, on bork's extension runtime |
+| **Cyberswine** | yes, plus a `contextMenus` shim | yes, the same files; its navigation blocking runs through the runtime's `webRequest` bridge |
+| Anything from addons.mozilla.org | installs | — |
 
-Every add-on with a toolbar button is in the menu under **Add-ons**, and
-opens its popup in a sheet — uBlock's popup, Dark Reader's switch, YouTube
-Manager's quick settings. **Menu → Add-ons** lists them all, with their
-settings pages, an off switch and Remove. Removing a shipped add-on sticks,
-as on the desktop. Anything else installs from addons.mozilla.org.
+Each add-on with a toolbar button is in the menu and opens its popup in a
+sheet; their settings pages open in tabs.
 
 ### YouTube Manager on a phone
 
@@ -50,7 +58,7 @@ replaces only the part that touches YouTube's pages:
 
 | Desktop | Mobile |
 |---|---|
-| Channel blocking on home, search, the watch sidebar, Shorts | **Kept**, on m.youtube.com's markup (and on the desktop site, if you ask for it) |
+| Channel blocking on home, search, the watch sidebar, Shorts | **Kept**, on m.youtube.com's markup (and the desktop site, if you ask for it) |
 | SHUT UP in a bar that follows the pointer | **A SHUT UP button under every video card**, and one beside Subscribe on the watch page |
 | Subscription tabs + TAG | **Kept**: tabs at the top of the subscriptions feed, a TAG button under each video, a bottom sheet to pick the tab |
 | Shorts switch on the subscriptions feed | **Kept** |
@@ -60,25 +68,46 @@ replaces only the part that touches YouTube's pages:
 | End-of-video suggestion wall | **Stripped** — the mobile player does not build one |
 | "Who do I subscribe to" from the guide drawer | **Replaced** — the mobile site has no drawer; Subscribe buttons and the subscriptions feed's channel strip say it instead, and it is remembered |
 
+### The iOS extension runtime
+
+`ios/Bork/Extensions/` runs bork's add-ons from their own unchanged files:
+content scripts in an isolated WebKit content world per add-on, background
+pages in hidden web views, extension pages on `bork-ext://`, and
+`browser.storage`, `runtime` messaging, `tabs.query/sendMessage/create`,
+and blocking `webRequest` for top-level navigations — the API surface
+bork's add-ons use, not all of WebExtensions. A message is accepted only
+from the add-on's own content world or its own `bork-ext://` pages, so no
+web page can reach an add-on's storage.
+
 ## Building
 
-Needs the Android SDK with **platform 37.2** and a JDK 17+ (Android Studio's
-bundled one works). Gradle and everything else comes via the wrapper.
+### Android
+
+Needs the Android SDK with **platform 37.2** and JDK 17+ (Android Studio's
+bundled one works).
 
 ```bash
+cd android
 export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
-./gradlew :app:assembleDebug        # app/build/outputs/apk/debug/app-debug.apk
-./gradlew :app:assembleRelease      # self-signed with the debug key, like the desktop builds
-```
-
-Install on a phone or an emulator:
-
-```bash
+./gradlew :app:assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-GeckoView ships as an arm64 library here (every current phone, and Apple
-Silicon emulators).
+### iOS
+
+Needs Xcode 26 (iOS 17+ deployment target; runs on iPhone and iPad, and on
+Apple Silicon Macs as an iPad app).
+
+```bash
+cd ios
+xcodegen generate        # only after editing project.yml; the project is committed
+xcodebuild -project Bork.xcodeproj -target Bork -sdk iphonesimulator -arch arm64 \
+  SYMROOT=build/Build/Products CODE_SIGNING_ALLOWED=NO build
+xcrun simctl install booted build/Build/Products/Debug-iphonesimulator/Bork.app
+```
+
+Or open `ios/Bork.xcodeproj` in Xcode and run. A device build needs your
+own signing team.
 
 ## Tests
 
@@ -87,26 +116,31 @@ deno test --allow-read tests/
 ```
 
 The YouTube Manager mobile script against markup captured from the real
-m.youtube.com — channel names from bylines, shorts and Subscribe buttons. No
-browser, no network.
+m.youtube.com. No browser, no network.
 
 ## Keeping the add-ons in step with the desktop
-
-The shared add-on files are copies of the ones in `bork-browser`. After
-changing them there:
 
 ```bash
 tools/sync-extensions.sh            # expects ../bork-browser next to this repo
 ```
 
-It copies everything shared and never touches the mobile-only files (listed
-at the top of the script). **Bump the mobile `manifest.json` version
-afterwards** — a built-in add-on is only reloaded when its version changes.
+It copies the files shared with the desktop into `shared/extensions/` and
+never touches the mobile-only ones (listed at the top of the script). **Bump
+the mobile `manifest.json` version afterwards** — Android only reloads a
+built-in add-on when its version changes.
+
+The iOS blocklist is rebuilt from the current EasyList and EasyPrivacy with:
+
+```bash
+tools/build-blocklist.py ios/Bork/Resources/blocklist.json
+```
 
 ## License
 
 [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/), as
-bork.
+bork. The iOS blocklist is derived from EasyList and EasyPrivacy by The
+EasyList authors, dual-licensed GPLv3 / CC BY-SA 3.0 and used here under
+CC BY-SA 3.0.
 
 bork is based on Floorp, which is based on Mozilla Firefox. It is not
 affiliated with, endorsed by, or connected to Mozilla, Ablaze or the Floorp

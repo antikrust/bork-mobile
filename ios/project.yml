@@ -1,0 +1,79 @@
+# Generate Bork.xcodeproj with: xcodegen generate   (brew install xcodegen)
+# The generated project is committed too, so Xcode alone can build it.
+name: Bork
+options:
+  bundleIdPrefix: online.borkbrowser
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    # WebKit's Swift overlay is a separate library only from iOS 26 on.
+    # Nothing here calls into it (see WKWebView.borkCall), so weak-link it
+    # and the app launches on iOS 17 and 18 too.
+    OTHER_LDFLAGS: ["-Wl,-weak-lswiftWebKit"]
+targets:
+  Bork:
+    type: application
+    platform: iOS
+    sources:
+      - path: Bork
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: online.borkbrowser.mobile
+        PRODUCT_NAME: Bork
+        TARGETED_DEVICE_FAMILY: "1,2"
+        CODE_SIGN_STYLE: Automatic
+    info:
+      path: Bork/Info.plist
+      properties:
+        CFBundleDisplayName: bork
+        # Plain PNG icons rather than an asset catalog: actool will not run
+        # without a simulator runtime matching the SDK, and these need none.
+        CFBundleIcons:
+          CFBundlePrimaryIcon:
+            CFBundleIconFiles: [AppIcon60x60]
+        CFBundleIcons~ipad:
+          CFBundlePrimaryIcon:
+            CFBundleIconFiles: [AppIcon60x60, AppIcon76x76, AppIcon83.5x83.5]
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen:
+          UIColorName: ""
+        UIUserInterfaceStyle: Dark
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        CFBundleURLTypes:
+          - CFBundleURLName: online.borkbrowser.mobile
+            CFBundleURLSchemes: [bork]
+        NSCameraUsageDescription: A web page you are on wants the camera.
+        NSMicrophoneUsageDescription: A web page you are on wants the microphone.
+        NSLocationWhenInUseUsageDescription: A web page you are on wants your location.
+        NSPhotoLibraryAddUsageDescription: Saving an image from a web page.
+        ITSAppUsesNonExemptEncryption: false
+    preBuildScripts:
+      - name: Copy add-ons
+        # bork's own add-ons, shared with the Android app. The .xpi files
+        # (uBlock Origin, Dark Reader) are Gecko-only and stay out.
+        script: |
+          dest="$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/extensions"
+          mkdir -p "$dest"
+          rsync -a --delete --exclude '*.xpi' --exclude '.DS_Store' "$SRCROOT/../shared/extensions/" "$dest/"
+        inputFiles:
+          - $(SRCROOT)/../shared/extensions
+        outputFiles:
+          - $(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/extensions
+        basedOnDependencyAnalysis: false
