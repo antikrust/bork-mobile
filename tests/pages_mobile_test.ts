@@ -6,7 +6,7 @@
 import { assertEquals } from "jsr:@std/assert@1";
 import { parseHTML } from "npm:linkedom@0.18.12";
 
-const root = new URL("../app/src/main/assets/extensions/youtube-manager/", import.meta.url);
+const root = new URL("../shared/extensions/youtube-manager/", import.meta.url);
 const fixture = await Deno.readTextFile(new URL("./fixtures/m-youtube.html", import.meta.url));
 
 // deno-lint-ignore no-explicit-any

@@ -41,6 +41,13 @@ android {
     packaging {
         jniLibs { useLegacyPackaging = true }
     }
+    sourceSets {
+        getByName("main") {
+            // The add-ons are shared with the iOS app: shared/extensions/
+            // lands in the APK as assets/extensions/.
+            assets.srcDir("../../shared")
+        }
+    }
     androidResources {
         // The extensions ship as directories and .xpi files; aapt must not
         // compress or drop any of them.

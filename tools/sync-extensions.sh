@@ -2,7 +2,8 @@
 # Refresh the extension files bork-mobile shares with the desktop build.
 #
 # The desktop tree (bork-browser) is the source of truth for everything
-# listed here; this copies it into the APK's assets. Files that exist only
+# listed here; this copies it into shared/extensions/, which both the
+# Android and the iOS app ship. Files that exist only
 # on mobile are never touched:
 #
 #   youtube-manager/manifest.json        MV2, m.youtube.com, no hover UI
@@ -19,7 +20,7 @@ set -eu
 here=$(cd "$(dirname "$0")/.." && pwd)
 desktop=${1:-$here/../bork-browser}
 src=$desktop/browser-features/extensions
-out=$here/app/src/main/assets/extensions
+out=$here/shared/extensions
 
 [ -d "$src/youtube-manager" ] || { echo "no desktop extensions at $src" >&2; exit 1; }
 
