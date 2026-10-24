@@ -36,7 +36,8 @@ cp "$src/youtube-manager/icons/"*.png "$yt/icons/"
 cs=$out/cyberswine
 mkdir -p "$cs"
 # Everything but the manifest, which mobile keeps its own copy of.
-(cd "$src/cyberswine" && find . -type f ! -name manifest.json ! -name .DS_Store) |
+# Tests stay on the desktop side; the app ships only what runs.
+(cd "$src/cyberswine" && find . -type f ! -name manifest.json ! -name .DS_Store ! -path "./test/*") |
 while read -r f; do
   mkdir -p "$cs/$(dirname "$f")"
   cp "$src/cyberswine/$f" "$cs/$f"
