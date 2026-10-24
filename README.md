@@ -93,6 +93,23 @@ export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
+### Releasing the Android app
+
+Release builds are signed with the key in `android/release.keystore`, whose
+passwords are in `android/keystore.properties`. **Both are gitignored, and
+both must be backed up**: Android only installs an update signed with the same
+key as the copy already on the phone, so losing them means nobody who
+installed bork can update. Without them, `assembleRelease` falls back to the
+debug key, which is fine for testing and never for the website.
+
+```bash
+cd android && ./gradlew :app:assembleRelease
+```
+
+The website takes the APK from there: bork-browser's
+`tools/release/production-build.sh` stages it as `Bork-android-arm64.apk`, and
+refuses a debug-signed one.
+
 ### iOS
 
 Needs Xcode 26 (iOS 17+ deployment target; runs on iPhone and iPad, and on

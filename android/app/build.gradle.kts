@@ -2,6 +2,17 @@ plugins {
     id("com.android.application")
 }
 
+import java.util.Properties
+
+// The release key lives beside this project in keystore.properties +
+// release.keystore, both gitignored. Every published APK must be signed with
+// it: Android refuses an update signed with any other key. A checkout without
+// it builds release with the debug key instead, which is fine for testing and
+// never for the website.
+val releaseKey = rootProject.file("keystore.properties").takeIf { it.exists() }?.let { file ->
+    Properties().apply { file.inputStream().use(::load) }
+}
+
 // Pinned on purpose: GeckoView's API moves between majors, and the
 // extension/prompt delegates this app implements are written against this one.
 val geckoviewVersion = "158.0.20261007201254"
@@ -22,12 +33,21 @@ android {
         versionName = "0.1.0"
     }
 
+    signingConfigs {
+        if (releaseKey != null) {
+            create("release") {
+                storeFile = rootProject.file(releaseKey.getProperty("storeFile"))
+                storePassword = releaseKey.getProperty("storePassword")
+                keyAlias = releaseKey.getProperty("keyAlias")
+                keyPassword = releaseKey.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
-            // Self-signed like the desktop builds: release uses the debug key
-            // until a real signing config exists.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 
