@@ -185,11 +185,23 @@ final class ExtensionRuntime: NSObject {
         for css in script.css {
             guard let text = read(ext, css) else { continue }
             let literal = Self.jsString(text)
+            // A constructed stylesheet, not a <style> element: a page's
+            // Content-Security-Policy refuses <style> it did not write
+            // (DuckDuckGo's does), and Firefox exempts add-on CSS from that
+            // where WebKit gives us no such exemption. <style> is only the
+            // fallback for an engine without adoptedStyleSheets.
             body += """
             (function () {
+              const css = \(literal);
+              try {
+                const sheet = new CSSStyleSheet();
+                sheet.replaceSync(css);
+                document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+                return;
+              } catch (_) {}
               const s = document.createElement("style");
               s.dataset.borkExt = \(Self.jsString(ext.host));
-              s.textContent = \(literal);
+              s.textContent = css;
               (document.head || document.documentElement).appendChild(s);
             })();
 
@@ -254,6 +266,19 @@ final class ExtensionRuntime: NSObject {
     func backgroundHTML(_ ext: BorkExtension) -> String {
         let tags = ext.backgroundScripts.map { "<script src=\"/\($0)\"></script>" }.joined(separator: "\n")
         return "<!doctype html><meta charset=\"utf-8\"><title>\(ext.name)</title>\n\(tags)\n"
+    }
+
+    /// The app speaking to an add-on's background page, as one of its own
+    /// pages would with runtime.sendMessage. Used where the desktop has a
+    /// right-click menu entry and iOS has a native one instead.
+    func messageBackground(host: String, _ message: [String: Any], done: ((Any?) -> Void)? = nil) {
+        guard let ext = ext(host: host), ext.enabled, let background = backgrounds[ext.id] else {
+            done?(nil)
+            return
+        }
+        let sender: [String: Any] = ["id": ext.id, "url": "bork-ext://\(ext.host)/"]
+        background.borkCall("return await __borkExt.dispatchMessage(m, s)",
+                            ["m": message, "s": sender], world: .page) { done?($0) }
     }
 
     // MARK: Navigation (webRequest)

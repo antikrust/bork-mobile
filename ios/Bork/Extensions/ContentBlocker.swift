@@ -76,11 +76,14 @@ final class ContentBlocker {
     }
 
     private func finish() {
-        compileAllowList {
-            self.ready = true
-            let callbacks = self.waiting
-            self.waiting = []
-            callbacks.forEach { $0() }
+        // The YouTube list first, so the tabs re-applied below get it too.
+        YouTubeAds.shared.prepare {
+            self.compileAllowList {
+                self.ready = true
+                let callbacks = self.waiting
+                self.waiting = []
+                callbacks.forEach { $0() }
+            }
         }
     }
 
@@ -112,6 +115,7 @@ final class ContentBlocker {
     /// Put the lists on a web view's content controller (or take them off).
     func apply(to controller: WKUserContentController) {
         controller.removeAllContentRuleLists()
+        if YouTubeAds.shared.enabled, let youtube = YouTubeAds.shared.rules { controller.add(youtube) }
         guard enabled, let main else { return }
         controller.add(main)
         if let allow { controller.add(allow) }

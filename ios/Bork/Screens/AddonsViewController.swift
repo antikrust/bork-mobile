@@ -26,25 +26,34 @@ final class AddonsViewController: UITableViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "row")
     }
 
-    override func numberOfSections(in tv: UITableView) -> Int { 1 + exts.count }
+    /// Section 0: YouTube ads. 1: the content blocker. 2…: bork's add-ons.
+    private let first = 2
+
+    override func numberOfSections(in tv: UITableView) -> Int { first + exts.count }
 
     override func tableView(_ tv: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == 0 { return 1 + ContentBlocker.shared.allowedSites.count }
-        let ext = exts[section - 1]
+        if section == 0 { return 1 }
+        if section == 1 { return 1 + ContentBlocker.shared.allowedSites.count }
+        let ext = exts[section - first]
         return 1 + (ext.optionsPage != nil ? 1 : 0) + (ext.popup != nil ? 1 : 0)
     }
 
     override func tableView(_ tv: UITableView, titleForHeaderInSection section: Int) -> String? {
-        section == 0 ? "Ad and tracker blocking" : exts[section - 1].name
+        section == 0 ? "YouTube" : section == 1 ? "Ad and tracker blocking" : exts[section - first].name
     }
 
     override func tableView(_ tv: UITableView, titleForFooterInSection section: Int) -> String? {
         if section == 0 {
+            return "Takes the ads out of YouTube's own data before the player sees it, hides sponsored cards, "
+                + "and fast-forwards any ad that still starts — what uBlock Origin does for YouTube, built into "
+                + "bork because iOS lets no extension run here. Applies to new tabs."
+        }
+        if section == 1 {
             return "EasyList and EasyPrivacy, run by WebKit itself. iOS allows no engine but WebKit and WebKit runs no "
                 + "extensions in apps, so uBlock Origin and Dark Reader stay on Android and the desktop; this is what "
                 + "blocks here instead. Sites listed above are let off — swipe to remove one."
         }
-        let ext = exts[section - 1]
+        let ext = exts[section - first]
         if ext.host == "youtube-manager" {
             return "Blocks channels on m.youtube.com, adds SHUT UP and TAG buttons, subscription tabs and the Shorts switch. "
                 + "On a live stream, CHAT opens the chat with your filters."
@@ -58,6 +67,16 @@ final class AddonsViewController: UITableViewController {
         cell.accessoryType = .none
         var c = UIListContentConfiguration.valueCell()
         if indexPath.section == 0 {
+            c.text = "Block YouTube ads"
+            c.image = UIImage(systemName: "play.slash")
+            let toggle = UISwitch()
+            toggle.isOn = YouTubeAds.shared.enabled
+            toggle.addAction(UIAction { [weak self] _ in
+                YouTubeAds.shared.enabled = toggle.isOn
+                self?.reapplyBlocker()
+            }, for: .valueChanged)
+            cell.accessoryView = toggle
+        } else if indexPath.section == 1 {
             if indexPath.row == 0 {
                 c.text = "Content blocker"
                 c.image = UIImage(systemName: "shield.lefthalf.filled")
@@ -74,7 +93,7 @@ final class AddonsViewController: UITableViewController {
                 c.image = UIImage(systemName: "shield.slash")
             }
         } else {
-            let ext = exts[indexPath.section - 1]
+            let ext = exts[indexPath.section - first]
             switch indexPath.row {
             case 0:
                 c.text = "On"
@@ -106,8 +125,8 @@ final class AddonsViewController: UITableViewController {
 
     override func tableView(_ tv: UITableView, didSelectRowAt indexPath: IndexPath) {
         tv.deselectRow(at: indexPath, animated: true)
-        guard indexPath.section > 0, indexPath.row > 0 else { return }
-        let ext = exts[indexPath.section - 1]
+        guard indexPath.section >= first, indexPath.row > 0 else { return }
+        let ext = exts[indexPath.section - first]
         let popupRow = ext.popup != nil && indexPath.row == 1
         dismiss(animated: true) {
             if popupRow { self.browser.openPopup(ext) }
@@ -116,7 +135,7 @@ final class AddonsViewController: UITableViewController {
     }
 
     override func tableView(_ tv: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        guard indexPath.section == 0, indexPath.row > 0 else { return nil }
+        guard indexPath.section == 1, indexPath.row > 0 else { return nil }
         let site = ContentBlocker.shared.allowedSites[indexPath.row - 1]
         return UISwipeActionsConfiguration(actions: [UIContextualAction(style: .destructive, title: "Block again") { [weak self] _, _, done in
             ContentBlocker.shared.setAllowed(site, false) {

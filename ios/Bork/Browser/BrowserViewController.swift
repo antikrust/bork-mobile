@@ -355,6 +355,7 @@ final class BrowserViewController: UIViewController {
             // Add-ons and content scripts. A configuration WebKit hands us
             // for a popup window is a copy of its opener's and has them already.
             ExtensionRuntime.shared.configure(config)
+            YouTubeAds.shared.configure(config)
         }
         ContentBlocker.shared.apply(to: config.userContentController)
         let wv = WKWebView(frame: content.bounds, configuration: config)

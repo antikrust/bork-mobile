@@ -18,6 +18,7 @@
 		5E6819C9138C9FCD5E6B93CA /* TabTrayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A345F38F386267BD5FFE21 /* TabTrayViewController.swift */; };
 		634D258239D380ADDA28CDEC /* AppIcon76x76@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 0C4C8C3DA4B51B7BA62E2082 /* AppIcon76x76@2x.png */; };
 		64D2165010698D57A88925F2 /* BrowserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BE5BCF79DCC4B20CB44E90 /* BrowserViewController.swift */; };
+		6EE93CB5C82A8F3490B2F274 /* youtube-ads.js in Resources */ = {isa = PBXBuildFile; fileRef = 661F03E20B920C847D327D90 /* youtube-ads.js */; };
 		6EFE2C7AD11191C250064C84 /* blocklist.json in Resources */ = {isa = PBXBuildFile; fileRef = 3B788BCACEC054AA348CEA9D /* blocklist.json */; };
 		70E386CF539DC5A82C3F9F6B /* LibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1ECE35E2AF308ADF0C1067 /* LibraryViewController.swift */; };
 		89B4846AF8F149F93A69073D /* Menu.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBCFD2A98F6364E04510AD3 /* Menu.swift */; };
@@ -28,6 +29,7 @@
 		C65B7BE4FDBF64AC0400469D /* Tabs.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEE3EA8A741737F6E2D5AD25 /* Tabs.swift */; };
 		C6B33CC447FDA352BC7CD9C2 /* StartPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13277823E8D872BF867ED268 /* StartPageView.swift */; };
 		C8AE7DD29C487B5A50B44CC9 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42029DBEF7C73371A2C3F9C5 /* Theme.swift */; };
+		CDE781EF81616569FC9861F1 /* YouTubeAds.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5147DB7835D80E4004E28DD5 /* YouTubeAds.swift */; };
 		D3E638A7C4A4DAF0B2991AB4 /* PopupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A906000C54DF4F026F75C9D6 /* PopupViewController.swift */; };
 		D41A8BD311720BA56F7E9128 /* AppIcon60x60@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A93D6080163D8CA151F53E53 /* AppIcon60x60@2x.png */; };
 		D4233754D77B577DB9E32431 /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D950718FEE5FF7A02AA5ABD /* Store.swift */; };
@@ -48,6 +50,8 @@
 		4B43E925BD198AD3630AB0D7 /* ContentBlocker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentBlocker.swift; sourceTree = "<group>"; };
 		4FB6312407A8FF7D86DCEBAE /* extension-api.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "extension-api.js"; sourceTree = "<group>"; };
 		507A912A329208114B1FD999 /* AppIcon60x60@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon60x60@3x.png"; sourceTree = "<group>"; };
+		5147DB7835D80E4004E28DD5 /* YouTubeAds.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YouTubeAds.swift; sourceTree = "<group>"; };
+		661F03E20B920C847D327D90 /* youtube-ads.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "youtube-ads.js"; sourceTree = "<group>"; };
 		6FB62ABCA5C4BC1423532C05 /* AddonsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddonsViewController.swift; sourceTree = "<group>"; };
 		8E57022794855BBC56341F70 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9D950718FEE5FF7A02AA5ABD /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
@@ -73,6 +77,8 @@
 				4B43E925BD198AD3630AB0D7 /* ContentBlocker.swift */,
 				4FB6312407A8FF7D86DCEBAE /* extension-api.js */,
 				E0FF77C32767E36CAB78B995 /* ExtensionRuntime.swift */,
+				661F03E20B920C847D327D90 /* youtube-ads.js */,
+				5147DB7835D80E4004E28DD5 /* YouTubeAds.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -233,6 +239,7 @@
 				16F31A1479CE3D7F8447AA73 /* Eyes@3x.png in Resources */,
 				6EFE2C7AD11191C250064C84 /* blocklist.json in Resources */,
 				2E97D534026348B505568351 /* extension-api.js in Resources */,
+				6EE93CB5C82A8F3490B2F274 /* youtube-ads.js in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -285,6 +292,7 @@
 				C8AE7DD29C487B5A50B44CC9 /* Theme.swift in Sources */,
 				3149CB77492CBFE3AE61D241 /* UrlInput.swift in Sources */,
 				4DB25C3842A063DCE442B2E9 /* WebDelegates.swift in Sources */,
+				CDE781EF81616569FC9861F1 /* YouTubeAds.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

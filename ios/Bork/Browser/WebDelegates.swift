@@ -128,7 +128,7 @@ extension BrowserViewController: WKUIDelegate {
         present(alert, animated: true)
     }
 
-    func webView(_ webView: WKWebView, contextMenuConfigurationFor element: WKContextMenuElementInfo,
+    func webView(_ webView: WKWebView, contextMenuConfigurationForElement element: WKContextMenuElementInfo,
                  completionHandler: @escaping (UIContextMenuConfiguration?) -> Void) {
         guard let link = element.linkURL, let opener = tab(for: webView) else { return completionHandler(nil) }
         let config = UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
@@ -146,9 +146,29 @@ extension BrowserViewController: WKUIDelegate {
                 UIAction(title: "Share Link", image: UIImage(systemName: "square.and.arrow.up")) { [weak self] _ in
                     self?.share(link)
                 },
-            ])
+            ] + (self.cyberswineBlockAction(for: link).map { [$0] } ?? []))
         }
         completionHandler(config)
+    }
+
+    /// Cyberswine's "block this site", for a link. On the desktop it is a
+    /// right-click menu entry; iOS has no add-on menus, so it is ours.
+    func cyberswineBlockAction(for url: URL) -> UIAction? {
+        guard let host = url.host, ["http", "https"].contains(url.scheme ?? ""),
+              ExtensionRuntime.shared.ext(host: "cyberswine")?.enabled == true else { return nil }
+        let site = UrlInput.host(url.absoluteString)
+        return UIAction(title: "Block \(site) (Cyberswine)", image: UIImage(systemName: "nosign"),
+                        attributes: .destructive) { [weak self] _ in
+            self?.cyberswineBlock(host: host, reloading: nil)
+        }
+    }
+
+    func cyberswineBlock(host: String, reloading tab: Tab?) {
+        ExtensionRuntime.shared.messageBackground(host: "cyberswine", ["type": "fkof-block", "host": host]) { [weak self] _ in
+            self?.toast("Blocked \(UrlInput.host("https://\(host)/"))")
+            // The page you are on goes now; the next visit is stopped at the door.
+            tab?.webView?.reload()
+        }
     }
 
     func share(_ url: URL) {

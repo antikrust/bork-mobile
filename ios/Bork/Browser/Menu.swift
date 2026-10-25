@@ -46,6 +46,14 @@ extension BrowserViewController {
         var addons: [UIMenuElement] = ExtensionRuntime.shared.extensions.filter { $0.enabled && $0.popup != nil }.map { ext in
             UIAction(title: ext.name, image: Self.icon(for: ext)) { [weak self] _ in self?.openPopup(ext) }
         }
+        if let tab, onPage, let url = URL(string: tab.url), let host = url.host,
+           ["http", "https"].contains(url.scheme ?? ""),
+           ExtensionRuntime.shared.ext(host: "cyberswine")?.enabled == true {
+            addons.append(UIAction(title: "Block This Site (Cyberswine)", subtitle: UrlInput.host(tab.url),
+                                   image: UIImage(systemName: "nosign"), attributes: .destructive) { [weak self] _ in
+                self?.cyberswineBlock(host: host, reloading: tab)
+            })
+        }
         if let host = tab.flatMap({ URL(string: $0.url)?.host }), onPage, ContentBlocker.shared.enabled {
             let allowed = ContentBlocker.shared.isAllowed(host)
             addons.append(UIAction(title: allowed ? "Block ads here again" : "Don't block ads here",

@@ -39,10 +39,10 @@ start page, the look — is the same on both.
 
 | | Android | iOS |
 |---|---|---|
-| **uBlock Origin** | the AMO-signed build the desktop ships, full MV2 | — (WebKit cannot run it); EasyList + EasyPrivacy as a WebKit content blocker instead, with a per-site off switch |
+| **uBlock Origin** | the AMO-signed build the desktop ships, full MV2 | — (WebKit cannot run it); EasyList + EasyPrivacy as a WebKit content blocker instead, with a per-site off switch, and YouTube ads stripped by bork itself (below) |
 | **Dark Reader** | yes | — |
 | **YouTube Manager** | yes, ported to m.youtube.com (below) | yes, the same files, on bork's extension runtime |
-| **Cyberswine** | yes, plus a `contextMenus` shim | yes, the same files; its navigation blocking runs through the runtime's `webRequest` bridge |
+| **Cyberswine** | yes, plus a `contextMenus` shim | yes, the same files; its navigation blocking runs through the runtime's `webRequest` bridge, and *Block this site* is in the link long-press menu and the ⋯ menu |
 | Anything from addons.mozilla.org | installs | — |
 
 Each add-on with a toolbar button is in the menu and opens its popup in a
@@ -67,6 +67,18 @@ replaces only the part that touches YouTube's pages:
 | Watch tab saves with YouTube's *Save to Watch later* | **Stripped** — the Watch tab still holds single videos, as a note kept here only |
 | End-of-video suggestion wall | **Stripped** — the mobile player does not build one |
 | "Who do I subscribe to" from the guide drawer | **Replaced** — the mobile site has no drawer; Subscribe buttons and the subscriptions feed's channel strip say it instead, and it is remembered |
+
+### YouTube ads on iOS
+
+uBlock does this on Android. On iOS a content rule list cannot: YouTube
+serves video ads from youtube.com, inside the same data as the video. So
+`ios/Bork/Extensions/youtube-ads.js` runs in YouTube's page ahead of
+YouTube's own scripts and takes the ad sections out of that data as it
+arrives — the inline first load (`ytInitialPlayerResponse`, `ytInitialData`)
+and every `/youtubei/` API response — then hides what is left of promoted
+cards, and fast-forwards any ad that starts anyway. A small rule list blocks
+YouTube's ad and ad-tracking endpoints. It has its own switch under
+Add-ons, on by default; `tests/youtube_ads_test.ts` covers the stripping.
 
 ### The iOS extension runtime
 
