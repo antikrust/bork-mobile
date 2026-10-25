@@ -24,8 +24,7 @@ ios/Bork/
   Browser/             BrowserViewController (+ WebDelegates, Menu), tab tray,
                        start page, suggestions, add-on popup sheet
   Extensions/          ExtensionRuntime.swift + extension-api.js: the mini
-                       WebExtension runtime; ContentBlocker.swift;
-                       YouTubeAds.swift + youtube-ads.js: YouTube ad stripping
+                       WebExtension runtime; ContentBlocker.swift
   Data/                Settings, Store (SQLite), Tabs
   Screens/             Library, Add-ons, Settings
   Resources/           blocklist.json (generated), icons
@@ -36,7 +35,7 @@ shared/extensions/     (the Android build mounts this as its assets)
   *.xpi                AMO-signed uBlock Origin and Dark Reader (Android only)
 tools/sync-extensions.sh   refresh shared add-on files from ../bork-browser
 tools/build-blocklist.py   EasyList/EasyPrivacy -> WebKit content rules
-tests/                 deno tests for the mobile YouTube scripts
+tests/                 deno tests for the mobile YouTube script
 ```
 
 ## Commands
@@ -105,15 +104,6 @@ tools/sync-extensions.sh
 - **A configuration WebKit passes to `createWebViewWith` already carries
   the opener's message handlers.** Adding them again throws; only fresh
   configurations go through `ExtensionRuntime.configure`.
-- **A page's Content-Security-Policy applies to add-on CSS.** Firefox
-  exempts extension styles; WebKit does not, so a `<style>` element from a
-  content script is refused on strict pages (DuckDuckGo's html search, for
-  one — Cyberswine hid nothing there). Add-on CSS goes in as a constructed
-  stylesheet on `document.adoptedStyleSheets`, which no CSP can refuse.
-- **Check WKUIDelegate method names against the Objective-C selector.** A
-  near-miss Swift label (`contextMenuConfigurationFor element:` instead of
-  `contextMenuConfigurationForElement`) compiles silently and is never
-  called; WebKit's stock link menu showed instead of ours from the first build.
 - **Messages are trusted by world and origin, not by what they claim.**
   `ExtensionRuntime.handle` checks the sender's content world or bork-ext://
   origin against the add-on id. Keep it that way: the page world is shared
