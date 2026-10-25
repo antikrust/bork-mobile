@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>YouTube Manager — settings</title>
     <link rel="stylesheet" href="options.css" />
+    <!-- options.css gives every button display:inline-block, which beats the
+         hidden attribute; Stop must stay hidden until there is something to stop. -->
+    <style>[hidden] { display: none !important; }</style>
   </head>
   <body>
     <header>
@@ -126,6 +129,40 @@
         <label class="row"><input type="checkbox" id="threads" /> Enable the threaded reading view</label>
         <label class="row"><input type="checkbox" id="bumpThreads" /> Move a thread to the bottom when it gets a reply</label>
         <label class="row"><input type="checkbox" id="enabled" /> Filtering on</label>
+      </section>
+
+      <section>
+        <h2>Subscriptions</h2>
+        <p class="hint">
+          Your whole subscription list, out and back in. Export saves it as a
+          file — JSON, or CSV laid out like Google Takeout's. Import subscribes
+          you to every channel in a file that you are not already subscribed
+          to: a file from here, Takeout's <code>subscriptions.csv</code>, or
+          anything else that lists channel ids (<code>UC…</code>).
+        </p>
+        <p class="hint">
+          It works through a YouTube tab you are signed in on, and opens one in
+          the background if there isn't one.
+        </p>
+        <div class="addrow">
+          <button type="button" id="subs-export-json">Export JSON</button>
+          <button type="button" id="subs-export-csv">Export CSV</button>
+          <button type="button" id="subs-import">Import file…</button>
+          <button type="button" id="subs-stop" hidden>Stop</button>
+          <input type="file" id="subs-file" accept=".json,.csv,.txt,.xml,.opml" hidden />
+        </div>
+        <p id="subs-status" class="hint"></p>
+      </section>
+
+      <section>
+        <h2>Your comments</h2>
+        <p class="hint">
+          Delete your YouTube comments, replies and live chat messages in bulk —
+          all of them, or only the ones matching what you choose.
+        </p>
+        <div class="addrow">
+          <a class="button" href="../comments/comments.html">Open comment deletion</a>
+        </div>
       </section>
 
       <section>

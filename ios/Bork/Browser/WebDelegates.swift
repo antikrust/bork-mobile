@@ -17,6 +17,10 @@ extension BrowserViewController: WKNavigationDelegate {
             return decisionHandler(.allow, preferences)
         }
         preferences.preferredContentMode = tab.desktop ? .desktop : .mobile
+        let agent = tab.desktop ? Self.desktopUserAgent : nil
+        // An unset customUserAgent reads back as "", not nil.
+        let current = webView.customUserAgent.flatMap { $0.isEmpty ? nil : $0 }
+        if current != agent { webView.customUserAgent = agent }
         let scheme = url.scheme?.lowercased() ?? ""
 
         // mailto:, tel:, maps, app links: Android's job is iOS's here too.
@@ -59,6 +63,11 @@ extension BrowserViewController: WKNavigationDelegate {
 
     func webView(_ webView: WKWebView, navigationResponse: WKNavigationResponse, didBecome download: WKDownload) {
         download.delegate = self
+    }
+
+    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        // A new document: the old one's scripts, and their ports, are gone.
+        ExtensionRuntime.shared.pageGone(webView)
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
@@ -214,6 +223,10 @@ extension BrowserViewController: ExtensionHost {
     func extensionActiveTab() -> (id: Int, url: String, title: String)? {
         guard let tab = current else { return nil }
         return (tab.number, tab.url, tab.title)
+    }
+
+    func extensionTabs() -> [(id: Int, url: String, title: String, active: Bool, loaded: Bool)] {
+        tabs.map { ($0.number, $0.webView?.url?.absoluteString ?? $0.url, $0.title, $0 === current, $0.webView != nil) }
     }
 
     func extensionWebView(forTab id: Int) -> WKWebView? { tabs.first { $0.number == id }?.webView }

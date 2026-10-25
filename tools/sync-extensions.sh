@@ -10,6 +10,10 @@
 #   youtube-manager/src/pages-mobile.*   replaces the desktop pages.js/.css
 #   youtube-manager/src/ui-mobile.css    touch sizes for the chat panel
 #   youtube-manager/options/options.html wording for touch
+#   youtube-manager/options/options.js   the desktop's, but it finds and
+#                                        opens m.youtube.com tabs as well
+#   youtube-manager/src/subs-mobile.js   replaces subs.js (m.youtube.com, WebKit)
+#   youtube-manager/comments/*           comment deletion, one tab at a time
 #   youtube-manager/popup/popup.html     full-width popup
 #   cyberswine/manifest.json             adds the shim below
 #   cyberswine/src/mobile-shim.js        stands in for contextMenus
@@ -27,7 +31,7 @@ out=$here/shared/extensions
 yt=$out/youtube-manager
 mkdir -p "$yt/src" "$yt/options" "$yt/popup" "$yt/icons"
 for f in src/channels.js src/store.js src/filters.js src/threads.js \
-         src/content.js src/ui.css options/options.js options/options.css \
+         src/content.js src/ui.css options/options.css \
          popup/popup.js; do
   cp "$src/youtube-manager/$f" "$yt/$f"
 done

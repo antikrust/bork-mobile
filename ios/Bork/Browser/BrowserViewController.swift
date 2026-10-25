@@ -340,6 +340,20 @@ final class BrowserViewController: UIViewController {
         if select, tab === current { show(tab) } else { updateUI() }
     }
 
+    /// Safari's version is the system's: "18.5".
+    static let safariVersion = UIDevice.current.systemVersion.split(separator: ".").prefix(2).joined(separator: ".")
+
+    /// The tail Safari puts on its user agent. WebKit's default stops at
+    /// "Mobile/15E148", and Google reads a user agent without "Safari/" as
+    /// an embedded web view and refuses to sign in ("This browser or app may
+    /// not be secure").
+    static let safariName = "Version/\(safariVersion) Mobile/15E148 Safari/604.1"
+
+    /// What Safari sends when you ask for the desktop site. The tail above is
+    /// fixed when the web view is made, so a desktop-site tab sets the whole
+    /// string instead; without it, the Mac string would still say "Mobile".
+    static let desktopUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/\(safariVersion) Safari/605.1.15"
+
     @discardableResult
     private func ensureWebView(_ tab: Tab, configuration: WKWebViewConfiguration? = nil) -> WKWebView {
         if let wv = tab.webView { return wv }
@@ -352,6 +366,7 @@ final class BrowserViewController: UIViewController {
             config.preferences.isElementFullscreenEnabled = true
             config.defaultWebpagePreferences.preferredContentMode = tab.desktop ? .desktop : .mobile
             config.defaultWebpagePreferences.allowsContentJavaScript = Settings.javascript
+            config.applicationNameForUserAgent = Self.safariName
             // Add-ons and content scripts. A configuration WebKit hands us
             // for a popup window is a copy of its opener's and has them already.
             ExtensionRuntime.shared.configure(config)
@@ -433,6 +448,7 @@ final class BrowserViewController: UIViewController {
 
     func close(_ tab: Tab, selectInstead: Tab? = nil) {
         guard let i = tabs.firstIndex(where: { $0 === tab }) else { return }
+        if let view = tab.webView { ExtensionRuntime.shared.pageGone(view) }
         tab.webView?.removeFromSuperview()
         tab.webView?.stopLoading()
         observers[tab.id] = nil
@@ -455,6 +471,7 @@ final class BrowserViewController: UIViewController {
 
     func closeAll(in ws: Workspace) {
         for tab in tabs(in: ws) {
+            if let view = tab.webView { ExtensionRuntime.shared.pageGone(view) }
             tab.webView?.removeFromSuperview()
             observers[tab.id] = nil
             tab.webView = nil

@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "YouTube Manager",
-  "version": "0.2.40.2",
+  "version": "0.2.41.1",
   "description": "Organise YouTube on your phone: block channels from home, search and the watch page, sort your subscriptions into tabs of your own, toggle Shorts, and tame live chat with word and author filters, blocking and a threaded view.",
   "icons": {
     "16": "icons/icon-16.png",
@@ -45,10 +45,23 @@
         "src/channels.js",
         "src/store.js",
         "src/filters.js",
-        "src/pages-mobile.js"
+        "src/pages-mobile.js",
+        "src/subs-mobile.js"
       ],
       "css": [
         "src/pages-mobile.css"
+      ]
+    },
+    {
+      "matches": [
+        "https://myactivity.google.com/page*"
+      ],
+      "run_at": "document_idle",
+      "js": [
+        "comments/activity-mobile.js"
+      ],
+      "css": [
+        "comments/activity-mobile.css"
       ]
     }
   ],

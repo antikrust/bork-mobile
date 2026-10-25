@@ -74,6 +74,9 @@ final class BorkExtension {
 protocol ExtensionHost: AnyObject {
     func extensionTabID(for webView: WKWebView) -> Int?
     func extensionActiveTab() -> (id: Int, url: String, title: String)?
+    /// `loaded` is false for a tab restored from last time and not opened
+    /// since: it has no page yet, so nothing in it can answer.
+    func extensionTabs() -> [(id: Int, url: String, title: String, active: Bool, loaded: Bool)]
     func extensionWebView(forTab id: Int) -> WKWebView?
     @discardableResult func extensionOpen(_ url: URL, active: Bool) -> Int?
     func extensionClose(_ webView: WKWebView)
@@ -105,6 +108,14 @@ final class ExtensionRuntime: NSObject {
     private var storage: [String: [String: Any]] = [:]
     private var backgrounds: [String: WKWebView] = [:]
     private var backgroundReady: Set<String> = []
+
+    /// One end of a port: the page it lives in and the world its script runs in.
+    private struct PortEnd {
+        weak var view: WKWebView?
+        let world: WKContentWorld
+    }
+    /// Open ports by id, both ends, and the add-on they belong to.
+    private var ports: [String: (ext: String, opener: PortEnd, target: PortEnd)] = [:]
     private let views = NSHashTable<WKWebView>.weakObjects()
     private var apiSource = ""
     private lazy var bridge = Bridge(runtime: self)
@@ -426,7 +437,19 @@ final class ExtensionRuntime: NSObject {
             reply(nil, nil)
 
         case "tabs.query":
-            if let tab = host?.extensionActiveTab() {
+            let info = args as? [String: Any] ?? [:]
+            let patterns = (info["url"] as? [String]) ?? (info["url"] as? String).map { [$0] }
+            if let patterns {
+                // By address: every tab that matches, in front or not.
+                let found = (host?.extensionTabs() ?? []).enumerated().filter { _, tab in
+                    patterns.contains { tab.url.range(of: MatchPattern.regex($0), options: .regularExpression) != nil }
+                        && (info["active"] as? Bool).map { $0 == tab.active } ?? true
+                }
+                reply(found.map { i, tab in
+                    ["id": tab.id, "url": tab.url, "title": tab.title, "active": tab.active,
+                     "index": i, "windowId": 1, "discarded": !tab.loaded] as [String: Any]
+                }, nil)
+            } else if let tab = host?.extensionActiveTab() {
                 reply([["id": tab.id, "url": tab.url, "title": tab.title, "active": true, "index": 0, "windowId": 1]], nil)
             } else {
                 reply([Any](), nil)
@@ -445,6 +468,38 @@ final class ExtensionRuntime: NSObject {
             let id = host?.extensionOpen(url, active: dict["active"] as? Bool ?? true)
             reply(["id": id ?? -1, "url": url.absoluteString], nil)
 
+        case "port.open":
+            let dict = args as? [String: Any] ?? [:]
+            guard let id = dict["id"] as? String, let tabID = dict["tabId"] as? Int,
+                  let target = host?.extensionWebView(forTab: tabID), let opener = webView
+            else { return reply(false, nil) }
+            ports[id] = (ext.id, PortEnd(view: opener, world: message.world), PortEnd(view: target, world: ext.world))
+            let sender: [String: Any] = ["id": ext.id, "url": message.frameInfo.request.url?.absoluteString ?? ""]
+            target.borkCall("return globalThis.__borkExt ? __borkExt.openPort(i, n, s) : false",
+                            ["i": id, "n": dict["name"] as? String ?? "", "s": sender], world: ext.world) { [weak self] value in
+                let ok = value as? Bool ?? false
+                if !ok { self?.ports[id] = nil }
+                reply(ok, nil)
+            }
+        case "port.post":
+            let dict = args as? [String: Any] ?? [:]
+            guard let id = dict["id"] as? String, let port = ports[id], port.ext == ext.id else { return reply(nil, nil) }
+            let fromOpener = port.opener.view === webView && port.opener.world.name == message.world.name
+            let (to, from) = fromOpener ? (port.target, port.opener) : (port.opener, port.target)
+            reply(nil, nil)
+            guard let view = to.view else { return closePort(id, notify: from) }
+            view.borkCall("return globalThis.__borkExt ? __borkExt.portMessage(i, m) : false",
+                          ["i": id, "m": dict["message"] ?? NSNull()], world: to.world) { [weak self] value in
+                // Its page moved on and took the script with it.
+                if (value as? Bool) != true { self?.closePort(id, notify: from) }
+            }
+        case "port.close":
+            let dict = args as? [String: Any] ?? [:]
+            guard let id = dict["id"] as? String, let port = ports[id], port.ext == ext.id else { return reply(nil, nil) }
+            let fromOpener = port.opener.view === webView && port.opener.world.name == message.world.name
+            closePort(id, notify: fromOpener ? port.target : port.opener)
+            reply(nil, nil)
+
         case "webRequest.listen":
             ext.wantsWebRequest = true
             reply(nil, nil)
@@ -453,6 +508,22 @@ final class ExtensionRuntime: NSObject {
             reply(nil, nil)
         default:
             reply(nil, "unsupported: \(op)")
+        }
+    }
+
+    // MARK: Ports
+
+    private func closePort(_ id: String, notify end: PortEnd) {
+        guard ports.removeValue(forKey: id) != nil else { return }
+        end.view?.borkCall("globalThis.__borkExt && __borkExt.portClosed(i)", ["i": id], world: end.world)
+    }
+
+    /// A page navigated or its tab closed: its scripts are gone, and so is
+    /// every port they held. The other ends hear onDisconnect.
+    func pageGone(_ webView: WKWebView) {
+        for (id, port) in ports {
+            if port.opener.view === webView { closePort(id, notify: port.target) }
+            else if port.target.view === webView { closePort(id, notify: port.opener) }
         }
     }
 

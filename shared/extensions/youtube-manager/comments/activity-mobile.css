@@ -1,0 +1,41 @@
+/* The progress panel YouTube Manager puts on Google My Activity. */
+.ytm-act-panel {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  z-index: 2147483647;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid #e5484d;
+  border-radius: 12px;
+  background: #16171a;
+  color: #e8e8ea;
+  font: 14px/1.4 -apple-system, system-ui, sans-serif;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+}
+
+.ytm-act-title {
+  grid-column: 1 / -1;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #e5484d;
+}
+
+.ytm-act-status {
+  min-width: 0;
+}
+
+.ytm-act-button {
+  padding: 8px 16px;
+  border: 1px solid #e5484d;
+  border-radius: 8px;
+  background: transparent;
+  color: #e5484d;
+  font: inherit;
+}

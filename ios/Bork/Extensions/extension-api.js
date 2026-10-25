@@ -13,10 +13,10 @@
  *   const __BORK_EXT__ = { id, host, kind: "content" | "page" | "background" };
  *
  * Implemented: storage.local (get/set/remove/clear) + storage.onChanged,
- * runtime.{id,getURL,getManifest,sendMessage,onMessage,openOptionsPage},
- * tabs.{query,sendMessage,create}, webRequest.onBeforeRequest (main frame,
- * blocking), i18n.getMessage. contextMenus is accepted and inert, as on
- * GeckoView.
+ * runtime.{id,getURL,getManifest,sendMessage,onMessage,onConnect,
+ * openOptionsPage}, tabs.{query,sendMessage,connect,create},
+ * webRequest.onBeforeRequest (main frame, blocking), i18n.getMessage.
+ * contextMenus is accepted and inert, as on GeckoView.
  */
 (function () {
   "use strict";
@@ -92,6 +92,68 @@
     });
   }
 
+  /* ------------------------------------------------------------------ ports */
+
+  // tabs.connect / runtime.onConnect: a long-lived channel between an
+  // add-on's page and its content script in a tab. The app pairs the two
+  // ends by id and carries each message across; when one end disconnects or
+  // its page goes away, the other end's onDisconnect fires.
+  const ports = new Map();
+  const onConnect = event();
+
+  function makePort(id, name, sender) {
+    const onPortMessage = event();
+    const onPortDisconnect = event();
+    let open = true;
+    const port = {
+      name,
+      sender,
+      onMessage: onPortMessage,
+      onDisconnect: onPortDisconnect,
+      postMessage(message) {
+        if (!open) throw new Error("Attempt to postMessage on disconnected port");
+        call("port.post", { id, message: clone(message) }).catch(() => {});
+      },
+      disconnect() {
+        if (!open) return;
+        open = false;
+        ports.delete(id);
+        call("port.close", { id }).catch(() => {});
+      },
+    };
+    ports.set(id, { port, onPortMessage, onPortDisconnect, shut() { open = false; } });
+    return port;
+  }
+
+  /** The other end connected to us. False when nothing here listens. */
+  function openPort(id, name, sender) {
+    if (!onConnect.hasListeners()) return false;
+    const port = makePort(id, name, sender || {});
+    for (const fn of [...onConnect.listeners]) {
+      try { fn(port); } catch (error) { console.error("[bork-ext] onConnect listener threw", error); }
+    }
+    return true;
+  }
+
+  function portMessage(id, message) {
+    const entry = ports.get(id);
+    if (!entry) return false;
+    for (const fn of [...entry.onPortMessage.listeners]) {
+      try { fn(clone(message), entry.port); } catch (error) { console.error("[bork-ext] port listener threw", error); }
+    }
+    return true;
+  }
+
+  function portClosed(id) {
+    const entry = ports.get(id);
+    if (!entry) return;
+    ports.delete(id);
+    entry.shut();
+    for (const fn of [...entry.onPortDisconnect.listeners]) {
+      try { fn(entry.port); } catch (error) { console.error(error); }
+    }
+  }
+
   const base = `bork-ext://${meta.host}/`;
   const runtime = {
     id: meta.id,
@@ -100,6 +162,7 @@
     sendMessage(message) { return call("runtime.sendMessage", clone(message)); },
     openOptionsPage() { return call("runtime.openOptionsPage").then(() => undefined); },
     onMessage,
+    onConnect,
     onInstalled: event(),
     onStartup: event(),
     lastError: null,
@@ -111,6 +174,13 @@
     query(info) { return call("tabs.query", info || {}); },
     sendMessage(tabId, message) { return call("tabs.sendMessage", { tabId, message: clone(message) }); },
     create(props) { return call("tabs.create", props || {}); },
+    connect(tabId, info) {
+      const id = `${meta.kind}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+      const port = makePort(id, (info && info.name) || "", { id: meta.id });
+      call("port.open", { tabId, id, name: port.name })
+        .then((ok) => { if (!ok) portClosed(id); }, () => portClosed(id));
+      return port;
+    },
   };
 
   /* ------------------------------------------------------------- webRequest */
@@ -171,6 +241,9 @@
         }
       },
       dispatchMessage,
+      openPort,
+      portMessage,
+      portClosed,
       beforeRequest: runBeforeRequest,
       hasBeforeRequest: () => beforeRequest.hasListeners(),
     },
