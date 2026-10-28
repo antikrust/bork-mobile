@@ -33,7 +33,9 @@ start page, the look — is the same on both.
 - **Private tabs**, **desktop site** per tab, **find in page**, downloads,
   bookmarks and history (on the phone and nowhere else), tabs that come
   back after a restart, the address bar at the bottom if you prefer it.
-- **No telemetry, no crash reports, no accounts.**
+- **Private by default**: trackers blocked, each site's cookies kept to that
+  site, private tabs that leave nothing behind, and nothing reported back
+  about how you use it.
 
 ## Add-ons
 
