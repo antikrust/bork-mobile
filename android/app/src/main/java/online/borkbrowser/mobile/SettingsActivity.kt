@@ -50,8 +50,9 @@ class SettingsActivity : Screen() {
 
         body.addView(Ui.header(this, "Privacy"))
         body.addView(note(
-            "No telemetry, no crash reports, no accounts — nothing is sent anywhere. Tracking protection " +
-                "and Global Privacy Control are always on, and uBlock Origin ships installed.",
+            "Private by default: trackers are blocked, each site's cookies stay with that site, and " +
+                "Global Privacy Control is always on. uBlock Origin ships installed, and nothing is " +
+                "reported back about how you use bork.",
         ))
         body.addView(Ui.row(this, "Clear history", R.drawable.ic_history) {
             confirm("Clear history?", "Every visited page is forgotten. Pinned sites stay.") {

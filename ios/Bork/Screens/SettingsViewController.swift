@@ -11,7 +11,7 @@ final class SettingsViewController: UITableViewController {
     private let sections: [(String?, [Row], String?)] = [
         ("Browsing", [.engine, .bottom, .desktop, .restore, .javascript], "JavaScript applies to new tabs."),
         ("Privacy", [.clearHistory, .clearData],
-         "No telemetry, no crash reports, no accounts — nothing is sent anywhere. Ads and trackers are blocked by the content blocker (Add-ons)."),
+         "Private by default: ads and trackers are blocked by the content blocker (Add-ons), and nothing is reported back about how you use bork."),
         ("Advanced", [.inspectable], "Lets Safari's Web Inspector on a Mac attach to pages, for add-on work."),
         ("About", [.about, .notice], nil),
     ]
