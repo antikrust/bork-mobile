@@ -101,7 +101,7 @@ final class ExtensionRuntime: NSObject {
 
     /// bork's own add-ons that run on iOS. uBlock Origin and Dark Reader do
     /// not: see ContentBlocker for what stands in for the first.
-    static let bundled = ["youtube-manager", "cyberswine"]
+    static let bundled = ["youtubedaddy", "cyberswine"]
 
     weak var host: ExtensionHost?
     private(set) var extensions: [BorkExtension] = []

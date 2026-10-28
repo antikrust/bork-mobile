@@ -123,7 +123,7 @@
     box.className = "ytm-act-panel";
     const title = document.createElement("div");
     title.className = "ytm-act-title";
-    title.textContent = "YouTube Manager";
+    title.textContent = "YoutubeDaddy";
     const status = document.createElement("div");
     status.className = "ytm-act-status";
     const button = document.createElement("button");
@@ -209,7 +209,7 @@
     save(true);
     let text = `${stopped ? "Stopped" : "Finished"}. ${summary(result, verb)}.`;
     if (!result.checked) text += " Nothing was listed — if Google wants you to sign in or verify, do it here and press Find or Delete again.";
-    else text += " The list is on YouTube Manager's Delete comments page.";
+    else text += " The list is on YoutubeDaddy's Delete comments page.";
     ui.say(text);
     ui.finished();
   }

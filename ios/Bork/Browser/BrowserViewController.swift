@@ -727,7 +727,6 @@ final class BrowserViewController: UIViewController {
             ("https://m.youtube.com/", "YouTube"),
             ("https://en.m.wikipedia.org/", "Wikipedia"),
             ("https://duckduckgo.com/", "DuckDuckGo"),
-            ("https://news.ycombinator.com/", "Hacker News"),
             ("https://www.openstreetmap.org/", "OpenStreetMap"),
             ("https://borkbrowser.online/", "bork"),
         ] { Store.shared.addBookmark(url, title: title) }

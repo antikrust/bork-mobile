@@ -14,6 +14,16 @@ globalThis.YTCT = globalThis.YTCT || {};
     ? YTCT.filters.normalizeName
     : (v) => String(v ?? "").trim().toLowerCase();
 
+  /**
+   * An author as a mention would spell them. Chat now shows people by their
+   * handle, "@89Bossi", and a reply says "@89Bossi" — the "@" is the mention's,
+   * so compared with it left on the name, nothing ever matched and every reply
+   * sat on its own as a new thread.
+   */
+  function mentionName(author) {
+    return normalizeName(author).replace(/^@/, "");
+  }
+
   class ThreadStore {
     constructor(options) {
       const opts = options || {};
@@ -87,6 +97,7 @@ globalThis.YTCT = globalThis.YTCT || {};
 
       const after = normalizeName(text.slice(at + 1));
       if (!after) return null;
+      const self = mentionName(message.author);
 
       const cutoff = (message.ts || Date.now()) - this.windowMs;
       let best = null;
@@ -96,12 +107,12 @@ globalThis.YTCT = globalThis.YTCT || {};
         const candidate = this.recent[i];
         if ((candidate.ts || 0) < cutoff) break;
         if (candidate.id === message.id) continue;
+        const name = mentionName(candidate.author);
         // Someone @-ing themselves is a correction, not a reply.
-        if (normalizeName(candidate.author) === normalizeName(message.author)) continue;
-
-        const name = normalizeName(candidate.author);
-        if (!name || name.length <= bestLength) continue;
-        if (after.startsWith(name)) {
+        if (!name || name === self) continue;
+        if (name.length <= bestLength) continue;
+        // The name has to end where the mention does: "@Bob" is not "@Bobby".
+        if (after.startsWith(name) && !/[\p{L}\p{N}_]/u.test(after.charAt(name.length))) {
           best = candidate;
           bestLength = name.length;
         }

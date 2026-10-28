@@ -15,7 +15,7 @@ import java.io.File
  *
  * Two kinds ship:
  *
- *  - bork's own (YouTube Manager, Cyberswine) are BUILT-IN: loaded straight
+ *  - bork's own (YoutubeDaddy, Cyberswine) are BUILT-IN: loaded straight
  *    out of the APK's assets with ensureBuiltIn, unsigned, updated with the
  *    app. Same as the desktop, where they are distribution add-ons.
  *  - uBlock Origin and Dark Reader are the AMO-signed .xpi files the desktop
@@ -276,7 +276,7 @@ class Addons(private val app: BorkApplication) {
 
         val BUNDLED = listOf(
             Bundled("uBlock0@raymondhill.net", Kind.XPI, "extensions/ublock-origin.xpi"),
-            Bundled("youtube-manager@bork", Kind.BUILT_IN, "resource://android/assets/extensions/youtube-manager/"),
+            Bundled("youtubedaddy@bork", Kind.BUILT_IN, "resource://android/assets/extensions/youtubedaddy/"),
             Bundled("cyberswine@bork", Kind.BUILT_IN, "resource://android/assets/extensions/cyberswine/"),
             Bundled("addon@darkreader.org", Kind.XPI, "extensions/dark-reader.xpi"),
         )

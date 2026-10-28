@@ -54,7 +54,7 @@ final class AddonsViewController: UITableViewController {
                 + "blocks here instead. Sites listed above are let off — swipe to remove one."
         }
         let ext = exts[section - first]
-        if ext.host == "youtube-manager" {
+        if ext.host == "youtubedaddy" {
             return "Blocks channels on m.youtube.com, adds SHUT UP and TAG buttons, subscription tabs and the Shorts switch. "
                 + "On a live stream, CHAT opens the chat with your filters."
         }

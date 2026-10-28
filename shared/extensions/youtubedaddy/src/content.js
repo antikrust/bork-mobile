@@ -660,7 +660,8 @@
     if (!box) return;
 
     box.focus();
-    const mention = `@${author} `;
+    // Handles already carry their "@".
+    const mention = `@${String(author).replace(/^@/, "")} `;
     let inserted = false;
     try {
       inserted = document.execCommand("insertText", false, mention);
@@ -804,6 +805,34 @@
     rescan();
   }
 
+  /*
+   * "Top chat" is YouTube filtering the chat before anything here sees it —
+   * messages it judges low-value never arrive. With the filters doing that
+   * job, the whole chat is what should come in, so pick "Live chat" once when
+   * the chat opens. The menu is two items, Top chat first and Live chat
+   * second, in every language; the choice is left alone after that, so
+   * switching back by hand sticks.
+   */
+  let chatPicked = false;
+
+  function pickLiveChat() {
+    if (chatPicked || !config) return;
+    if (!config.allChat) {
+      chatPicked = true;
+      return;
+    }
+    const items = document.querySelectorAll(
+      "yt-sort-filter-sub-menu-renderer tp-yt-paper-listbox a",
+    );
+    if (items.length < 2) return;
+    chatPicked = true;
+    const live = items[1];
+    const selected =
+      live.classList.contains("iron-selected") ||
+      !!live.querySelector("[aria-selected='true']");
+    if (!selected) live.click();
+  }
+
   async function boot() {
     await refresh(true);
     store.onChange(async () => {
@@ -813,6 +842,10 @@
     setInterval(ensureAttached, 1000);
     setInterval(ensureThreadsButton, 1000);
     setInterval(layoutPanel, 2000);
+    // Gives up after half a minute: a chat with no menu (a replay of a
+    // premiere, say) never grows one.
+    const picker = setInterval(pickLiveChat, 500);
+    setTimeout(() => clearInterval(picker), 30000);
   }
 
   boot().catch((error) => console.error("[SHUT UP] failed to start", error));

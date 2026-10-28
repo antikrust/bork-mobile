@@ -129,6 +129,43 @@ globalThis.YTCT = globalThis.YTCT || {};
      */
     subTabsRemoved: [],
 
+    /*
+     * The rest of YouTube. Everything that hides something is off until asked
+     * for; the two on by default only ever stop YouTube interrupting.
+     */
+    /** Video titles to hide, same rule syntax as the chat word lists. */
+    titleWords: [],
+    /** Shorts gone everywhere, not only on the subscriptions feed. */
+    hideShorts: false,
+    /** Videos already watched (red bar at least WATCHED_AT) gone from lists. */
+    hideWatched: false,
+    /** Mix playlists gone from lists, and a song opens as itself, not a Mix. */
+    hideMixes: false,
+    /** "People also watched", "For you" and the like gone from search results. */
+    tidySearch: false,
+    /** The home page's recommendations. */
+    hideHomeFeed: false,
+    /** Related videos beside the player. */
+    hideRelated: false,
+    /** Comments under videos. */
+    hideComments: false,
+    /** The wall of suggestions over a finished video. */
+    hideEndWall: false,
+    /** Two fingers left across a video presses YouTube's own Hide on it. */
+    swipeHide: true,
+    /** Answer "Video paused. Continue watching?" so it never stops anything. */
+    keepPlaying: true,
+    /** Live chat opens on "Live chat" rather than "Top chat". */
+    allChat: true,
+    /** Quality every video starts at: "" leaves it to YouTube, else hd1080 etc. */
+    quality: "",
+    /** Speed every video starts at; 1 leaves it alone. */
+    speed: 1,
+    /** Dislike counts from Return YouTube Dislike (sends the video id there). */
+    dislikes: false,
+    /** SponsorBlock segment categories skipped automatically; empty is off. */
+    skipCategories: [],
+
     stats: { hidden: 0, blocked: 0 },
   };
 

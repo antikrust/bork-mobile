@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
-  "name": "YouTube Manager",
-  "version": "0.2.41.1",
+  "name": "YoutubeDaddy",
+  "version": "0.3.3.1",
   "description": "Organise YouTube on your phone: block channels from home, search and the watch page, sort your subscriptions into tabs of your own, toggle Shorts, and tame live chat with word and author filters, blocking and a threaded view.",
   "icons": {
     "16": "icons/icon-16.png",
@@ -11,6 +11,7 @@
     "128": "icons/icon-128.png"
   },
   "permissions": [
+    "alarms",
     "storage"
   ],
   "content_scripts": [
@@ -74,7 +75,7 @@
   },
   "browser_action": {
     "default_popup": "popup/popup.html",
-    "default_title": "YouTube Manager",
+    "default_title": "YoutubeDaddy",
     "default_icon": {
       "16": "icons/icon-16.png",
       "32": "icons/icon-32.png"
@@ -82,8 +83,16 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "youtube-manager@bork",
+      "id": "youtubedaddy@bork",
       "strict_min_version": "115.0"
     }
+  },
+  "background": {
+    "scripts": [
+      "src/channels.js",
+      "src/store.js",
+      "src/filters.js",
+      "src/sync.js"
+    ]
   }
 }

@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>YoutubeDaddy settings</title>
+    <link rel="stylesheet" href="options.css" />
+    <!-- options.css gives every button display:inline-block, which beats the
+         hidden attribute. -->
+    <style>[hidden] { display: none !important; }</style>
+  </head>
+  <body>
+    <header>
+      <h1>YoutubeDaddy</h1>
+      <p class="sub">YouTube, organised.</p>
+      <span id="saved" class="saved">saved</span>
+    </header>
+
+    <main>
+      <section class="ban">
+        <h2>Blocked phrases</h2>
+        <p class="hint">Saying one blocks the person, and the message doesn't appear. One per line.</p>
+        <textarea id="banWords" spellcheck="false" rows="8"></textarea>
+        <div id="ban-errors" class="errors"></div>
+      </section>
+
+      <section>
+        <h2>Words and phrases</h2>
+        <p class="hint">Hides the message, not the person. One per line. Use <code>/pattern/flags</code> for a regex. Lines starting with <code>#</code> are ignored.</p>
+        <textarea id="words" spellcheck="false" rows="10" placeholder="free vbucks&#10;check my channel&#10;/^(first|1st)!*$/i"></textarea>
+        <div id="rule-errors" class="errors"></div>
+
+        <label class="row"><input type="checkbox" id="wholeWord" /> Match whole words only <span class="hint inline">(so "ass" doesn't hide "class")</span></label>
+        <label class="row"><input type="checkbox" id="caseSensitive" /> Case sensitive</label>
+        <label class="row"><input type="checkbox" id="matchAuthorNames" /> Apply these rules to usernames too</label>
+      </section>
+
+      <section>
+        <h2>Blocked people</h2>
+        <p class="hint">Everyone you've blocked in live chat.</p>
+        <form id="add-author" class="addrow">
+          <input type="text" id="author-input" placeholder="username" autocomplete="off" />
+          <button type="submit">Block</button>
+        </form>
+        <ul id="authors" class="authors"></ul>
+        <p id="authors-empty" class="hint">Nobody blocked yet.</p>
+      </section>
+
+      <section>
+        <h2>Blocked channels</h2>
+        <p class="hint">Hidden everywhere on YouTube. Press SHUT UP under any video, or add a name here.</p>
+        <form id="add-channel" class="addrow">
+          <input type="text" id="channel-input" placeholder="channel name" autocomplete="off" />
+          <button type="submit">Block</button>
+        </form>
+        <ul id="channels" class="authors"></ul>
+        <p id="channels-empty" class="hint">No channels blocked yet.</p>
+      </section>
+
+      <section>
+        <h2>Subscription tabs</h2>
+        <p class="hint">Tabs on your subscriptions feed. Press TAG under a video to put its channel in a tab.</p>
+        <p class="hint"><em>Watch</em> holds single videos, as a note kept on the phone.</p>
+        <form id="add-tab" class="addrow">
+          <input type="text" id="tab-input" placeholder="tab name" autocomplete="off" />
+          <button type="submit">Add</button>
+        </form>
+        <ul id="tabs" class="authors"></ul>
+        <p id="tabs-empty" class="hint">No tabs yet.</p>
+      </section>
+
+      <section>
+        <h2>Behaviour</h2>
+
+        <label class="row">
+          Hidden messages
+          <select id="hideMode">
+            <option value="hide">disappear completely</option>
+            <option value="collapse">leave a one-line note</option>
+          </select>
+        </label>
+
+        <label class="row">
+          Auto-block after
+          <input type="number" id="repeatLimit" min="0" max="50" step="1" />
+          messages caught by word rules
+          <span class="hint inline">(0 is off)</span>
+        </label>
+
+        <label class="row"><input type="checkbox" id="protectStaff" /> Never hide the channel owner or moderators</label>
+        <label class="row"><input type="checkbox" id="showButton" /> Show the SHUT UP button on each message</label>
+        <label class="row"><input type="checkbox" id="threads" /> Threaded view</label>
+        <label class="row"><input type="checkbox" id="bumpThreads" /> Move a thread to the bottom when it gets a reply</label>
+        <label class="row"><input type="checkbox" id="allChat" /> Open chat on "Live chat", not "Top chat" <span class="hint inline">(Top chat leaves messages out)</span></label>
+        <label class="row"><input type="checkbox" id="enabled" /> Filtering on</label>
+      </section>
+
+      <section hidden>
+        <h2>Videos</h2>
+        <p class="hint">Hide videos with these in the title. One per line, regex allowed. Not applied to your history or playlists.</p>
+        <textarea id="titleWords" spellcheck="false" rows="5" placeholder="reacts to&#10;/\bprank\b/i"></textarea>
+        <div id="title-errors" class="errors"></div>
+
+        <label class="row"><input type="checkbox" id="swipeHide" /> Swipe a video left with two fingers to hide it </label>
+        <label class="row"><input type="checkbox" id="hideShorts" /> Hide Shorts everywhere</label>
+        <label class="row"><input type="checkbox" id="hideWatched" /> Hide videos you've already watched</label>
+        <label class="row"><input type="checkbox" id="hideMixes" /> Hide Mixes, and play songs on their own</label>
+        <label class="row"><input type="checkbox" id="tidySearch" /> Tidy search results <span class="hint inline">(no "People also watched", "For you" and so on)</span></label>
+        <label class="row"><input type="checkbox" id="hideHomeFeed" /> Hide the home page's recommendations</label>
+        <label class="row"><input type="checkbox" id="hideRelated" /> Hide related videos beside the player</label>
+        <label class="row"><input type="checkbox" id="hideComments" /> Hide comments</label>
+        <label class="row"><input type="checkbox" id="hideEndWall" /> Hide the suggestions wall when a video ends</label>
+      </section>
+
+      <section hidden>
+        <h2>Player</h2>
+        <label class="row"><input type="checkbox" id="keepPlaying" /> Never stop for "Video paused. Continue watching?"</label>
+        <label class="row">
+          Start every video at
+          <select id="quality">
+            <option value="">YouTube's choice</option>
+            <option value="hd2160">2160p</option>
+            <option value="hd1440">1440p</option>
+            <option value="hd1080">1080p</option>
+            <option value="hd720">720p</option>
+            <option value="large">480p</option>
+            <option value="medium">360p</option>
+          </select>
+          and
+          <select id="speed">
+            <option value="1">normal speed</option>
+            <option value="1.25">1.25×</option>
+            <option value="1.5">1.5×</option>
+            <option value="1.75">1.75×</option>
+            <option value="2">2×</option>
+          </select>
+          <span class="hint inline">(not live streams)</span>
+        </label>
+      </section>
+
+      <section hidden>
+        <h2>From other people</h2>
+        <p class="hint">These send the video's id to the service. Firefox asks before either is switched on.</p>
+        <label class="row"><input type="checkbox" id="dislikes" /> Show dislike counts <span class="hint inline">(Return YouTube Dislike)</span></label>
+        <p class="hint">Skip these with SponsorBlock:</p>
+        <div class="skips">
+          <label class="row"><input type="checkbox" data-skip="sponsor" /> Sponsors</label>
+          <label class="row"><input type="checkbox" data-skip="selfpromo" /> Self-promotion and merch</label>
+          <label class="row"><input type="checkbox" data-skip="interaction" /> "Like and subscribe" reminders</label>
+          <label class="row"><input type="checkbox" data-skip="intro" /> Intros and intermissions</label>
+          <label class="row"><input type="checkbox" data-skip="outro" /> Endcards and credits</label>
+          <label class="row"><input type="checkbox" data-skip="preview" /> Previews and recaps</label>
+          <label class="row"><input type="checkbox" data-skip="filler" /> Filler tangents</label>
+          <label class="row"><input type="checkbox" data-skip="music_offtopic" /> Non-music parts of music videos</label>
+        </div>
+      </section>
+
+      <section>
+        <h2>Subscriptions</h2>
+        <p class="hint">Export your subscriptions, or import a file to subscribe to every channel in it. Takeout's <code>subscriptions.csv</code> works too. You need to be signed in to YouTube.</p>
+        <div class="addrow">
+          <button type="button" id="subs-export-json">Export JSON</button>
+          <button type="button" id="subs-export-csv">Export CSV</button>
+          <button type="button" id="subs-import">Import file…</button>
+          <button type="button" id="subs-stop" hidden>Stop</button>
+          <input type="file" id="subs-file" accept=".json,.csv,.txt,.xml,.opml" hidden />
+        </div>
+        <p id="subs-status" class="hint"></p>
+      </section>
+
+      <section>
+        <h2>Your comments</h2>
+        <p class="hint">Delete your comments, replies and live chat messages in bulk.</p>
+        <div class="addrow">
+          <a class="button" href="../comments/comments.html">Open comment deletion</a>
+        </div>
+      </section>
+
+      <section>
+        <h2>Sync</h2>
+        <p class="hint">Keep these settings the same on all your borks. They are encrypted with your password before they leave, so a lost password can't be recovered.</p>
+        <div id="sync-out">
+          <div class="addrow">
+            <input type="text" id="sync-user" placeholder="name or email" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" />
+            <input type="password" id="sync-pass" placeholder="password" autocomplete="current-password" />
+          </div>
+          <div class="addrow">
+            <button type="button" id="sync-signin">Sign in</button>
+            <button type="button" id="sync-signup">Sign up</button>
+          </div>
+        </div>
+        <div id="sync-in" hidden>
+          <div class="addrow">
+            <button type="button" id="sync-now">Sync now</button>
+            <button type="button" id="sync-signout">Sign out</button>
+          </div>
+        </div>
+        <p id="sync-status" class="hint"></p>
+      </section>
+
+      <section>
+        <h2>Backup</h2>
+        <p class="hint">Backup all YoutubeDaddy settings.</p>
+        <div class="addrow">
+          <button type="button" id="backup-save">Save</button>
+          <button type="button" id="backup-restore">Restore…</button>
+          <input type="file" id="backup-file" accept=".json,application/json" hidden />
+        </div>
+        <p id="backup-status" class="hint"></p>
+      </section>
+    </main>
+
+    <script src="../src/channels.js"></script>
+    <script src="../src/store.js"></script>
+    <script src="../src/filters.js"></script>
+    <script src="options.js"></script>
+  </body>
+</html>

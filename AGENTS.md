@@ -30,7 +30,7 @@ ios/Bork/
   Resources/           blocklist.json (generated), icons
 ios/project.yml        XcodeGen spec; Bork.xcodeproj is generated and committed
 shared/extensions/     (the Android build mounts this as its assets)
-  youtube-manager/     shared desktop files + mobile-only overlay
+  youtubedaddy/        shared desktop files + mobile-only overlay
   cyberswine/          desktop files + mobile manifest and shim
   *.xpi                AMO-signed uBlock Origin and Dark Reader (Android only)
 tools/sync-extensions.sh   refresh shared add-on files from ../bork-browser
@@ -67,7 +67,7 @@ tools/sync-extensions.sh
   which tab is in front unless the app says so; without it, clicking an
   add-on's button does nothing at all and logs nothing.
 - **`ensureBuiltIn` only reloads a built-in add-on when its manifest version
-  changes.** Edit YouTube Manager or Cyberswine and forget the bump, and the
+  changes.** Edit YoutubeDaddy or Cyberswine and forget the bump, and the
   phone keeps running the old copy.
 - **Sessions GeckoView opens for you are not open yet.** `onNewSession` and an
   add-on's `onNewTab` must return an *unopened* session; GeckoView opens it a

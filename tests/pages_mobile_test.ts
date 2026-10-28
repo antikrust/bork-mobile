@@ -1,4 +1,4 @@
-// Host-side tests for the YouTube Manager mobile content script: the parts
+// Host-side tests for the YoutubeDaddy mobile content script: the parts
 // that read YouTube's markup, run against markup captured from the real
 // m.youtube.com. No browser and no network.
 //
@@ -6,7 +6,7 @@
 import { assertEquals } from "jsr:@std/assert@1";
 import { parseHTML } from "npm:linkedom@0.18.12";
 
-const root = new URL("../shared/extensions/youtube-manager/", import.meta.url);
+const root = new URL("../shared/extensions/youtubedaddy/", import.meta.url);
 const fixture = await Deno.readTextFile(new URL("./fixtures/m-youtube.html", import.meta.url));
 
 // deno-lint-ignore no-explicit-any

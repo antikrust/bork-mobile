@@ -41,14 +41,14 @@ start page, the look — is the same on both.
 |---|---|---|
 | **uBlock Origin** | the AMO-signed build the desktop ships, full MV2 | — (WebKit cannot run it); EasyList + EasyPrivacy as a WebKit content blocker instead, with a per-site off switch, and YouTube ads stripped by bork itself (below) |
 | **Dark Reader** | yes | — |
-| **YouTube Manager** | yes, ported to m.youtube.com (below) | yes, the same files, on bork's extension runtime |
+| **YoutubeDaddy** | yes, ported to m.youtube.com (below) | yes, the same files, on bork's extension runtime |
 | **Cyberswine** | yes, plus a `contextMenus` shim | yes, the same files; its navigation blocking runs through the runtime's `webRequest` bridge, and *Block this site* is in the link long-press menu and the ⋯ menu |
 | Anything from addons.mozilla.org | installs | — |
 
 Each add-on with a toolbar button is in the menu and opens its popup in a
 sheet; their settings pages open in tabs.
 
-### YouTube Manager on a phone
+### YoutubeDaddy on a phone
 
 The desktop add-on is built around a mouse: a floating bar follows the
 pointer over video cards, and HIDE drives YouTube's own ⋮ menu. None of that
@@ -144,7 +144,7 @@ own signing team.
 deno test --allow-read tests/
 ```
 
-The YouTube Manager mobile script against markup captured from the real
+The YoutubeDaddy mobile script against markup captured from the real
 m.youtube.com. No browser, no network.
 
 ## Keeping the add-ons in step with the desktop

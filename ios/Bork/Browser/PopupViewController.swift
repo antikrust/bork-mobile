@@ -1,7 +1,7 @@
 import UIKit
 import WebKit
 
-/// An add-on's popup (YouTube Manager's switches, Cyberswine's "block this
+/// An add-on's popup (YoutubeDaddy's switches, Cyberswine's "block this
 /// site") in a sheet over the page it is about.
 final class PopupViewController: UIViewController, WKUIDelegate {
     let webView: WKWebView

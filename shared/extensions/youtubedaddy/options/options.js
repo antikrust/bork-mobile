@@ -20,7 +20,20 @@
     "showButton",
     "threads",
     "bumpThreads",
+    "allChat",
+    "hideShorts",
+    "hideWatched",
+    "hideMixes",
+    "tidySearch",
+    "hideHomeFeed",
+    "hideRelated",
+    "hideComments",
+    "hideEndWall",
+    "keepPlaying",
+    "swipeHide",
   ];
+  /** Sending a video id to someone else is "browsing activity" in Firefox's terms. */
+  const SHARED = { data_collection: ["browsingActivity"] };
 
   let config = null;
   let savingTimer = 0;
@@ -49,6 +62,15 @@
     }
     if (document.activeElement !== $("banWords")) {
       $("banWords").value = config.banWords.join("\n");
+    }
+    if (document.activeElement !== $("titleWords")) {
+      $("titleWords").value = (config.titleWords || []).join("\n");
+    }
+    $("quality").value = config.quality || "";
+    $("speed").value = String(config.speed || 1);
+    $("dislikes").checked = !!config.dislikes;
+    for (const box of document.querySelectorAll("[data-skip]")) {
+      box.checked = (config.skipCategories || []).includes(box.dataset.skip);
     }
     renderRuleErrors();
     renderBlocklist("authors", "authors-empty", "authors");
@@ -178,6 +200,7 @@
   function renderRuleErrors() {
     showErrors("rule-errors", config.words);
     showErrors("ban-errors", config.banWords);
+    showErrors("title-errors", config.titleWords || []);
   }
 
   function showErrors(boxId, words) {
@@ -186,7 +209,7 @@
     const broken = filters.compile(words, config).filter((r) => r.error);
     for (const rule of broken) {
       const line = document.createElement("div");
-      line.textContent = `${rule.src} — ${rule.error}`;
+      line.textContent = `${rule.src}: ${rule.error}`;
       box.appendChild(line);
     }
   }
@@ -254,6 +277,32 @@
     });
   }
 
+  /**
+   * A config out of a backup file. A whole-config backup (this page's own, or
+   * the raw stored config) replaces everything, run through the same defaults
+   * as a stored config so a file from an older version gains the newer keys.
+   * The old clipboard format held only the four lists, so those are laid over
+   * what is here and everything else stays.
+   */
+  function restoreFrom(doc) {
+    if (!doc || typeof doc !== "object") throw new Error("not a backup");
+    const whole = doc.config && typeof doc.config === "object" ? doc.config
+      : Array.isArray(doc.channels) && "subTabs" in doc ? doc
+      : null;
+    if (whole) return store.withDefaults(whole);
+    const next = store.clone(config);
+    let found = false;
+    const named = (list) => list
+      .map((e) => (typeof e === "string" ? { name: e, at: Date.now() } : e))
+      .filter((e) => e && e.name);
+    if (Array.isArray(doc.words)) (next.words = doc.words.map(String)), (found = true);
+    if (Array.isArray(doc.banWords)) (next.banWords = doc.banWords.map(String)), (found = true);
+    if (Array.isArray(doc.authors)) (next.authors = named(doc.authors)), (found = true);
+    if (Array.isArray(doc.channels)) (next.channels = named(doc.channels)), (found = true);
+    if (!found) throw new Error("nothing in it this page knows");
+    return next;
+  }
+
   function wire() {
     for (const id of CHECKBOXES) {
       $(id).addEventListener("change", async (event) => {
@@ -276,6 +325,42 @@
 
     wireList("words", "words");
     wireList("banWords", "banWords");
+    wireList("titleWords", "titleWords");
+
+    $("quality").addEventListener("change", async (event) => {
+      config.quality = event.target.value;
+      await persist();
+    });
+    $("speed").addEventListener("change", async (event) => {
+      config.speed = Number(event.target.value) || 1;
+      await persist();
+    });
+
+    // Switching either outside service on asks Firefox for permission first,
+    // inside the click; refused, the box goes back off.
+    async function allowSharing(box) {
+      if (!box.checked) return true;
+      try {
+        if (await api.permissions.request(SHARED)) return true;
+      } catch (error) {
+        console.error("[YoutubeDaddy]", error);
+      }
+      box.checked = false;
+      return false;
+    }
+    $("dislikes").addEventListener("change", async (event) => {
+      if (!(await allowSharing(event.target))) return;
+      config.dislikes = event.target.checked;
+      await persist();
+    });
+    for (const box of document.querySelectorAll("[data-skip]")) {
+      box.addEventListener("change", async () => {
+        if (!(await allowSharing(box))) return;
+        config.skipCategories = [...document.querySelectorAll("[data-skip]:checked")]
+          .map((b) => b.dataset.skip);
+        await persist();
+      });
+    }
 
     $("add-author").addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -320,50 +405,27 @@
       await persist();
     });
 
-    $("export").addEventListener("click", async () => {
-      const payload = JSON.stringify(
-        {
-          words: config.words,
-          banWords: config.banWords,
-          authors: config.authors,
-          channels: config.channels,
-        },
-        null,
-        2,
-      );
-      $("io").value = payload;
-      try {
-        await navigator.clipboard.writeText(payload);
-        flashSaved();
-      } catch {
-        // Clipboard permission can be refused; the textarea still has it.
-      }
+    $("backup-save").addEventListener("click", () => {
+      const doc = { format: "youtubedaddy-backup", saved: new Date().toISOString(), config };
+      const day = new Date().toISOString().slice(0, 10);
+      download(`youtubedaddy-backup-${day}.json`, "application/json", JSON.stringify(doc, null, 2));
+      $("backup-status").textContent = "Saved.";
     });
-
-    $("import").addEventListener("click", async () => {
-      const raw = $("io").value.trim();
-      if (!raw) return;
-      let parsed;
+    $("backup-restore").addEventListener("click", () => $("backup-file").click());
+    $("backup-file").addEventListener("change", async () => {
+      const file = $("backup-file").files[0];
+      $("backup-file").value = "";
+      if (!file) return;
       try {
-        parsed = JSON.parse(raw);
+        const next = restoreFrom(JSON.parse(await file.text()));
+        if (!confirm(`Replace everything here with ${file.name}?`)) return;
+        config = next;
+        render();
+        await persist();
+        $("backup-status").textContent = `Restored from ${file.name}.`;
       } catch (error) {
-        $("rule-errors").textContent = `Import failed: ${error.message}`;
-        return;
+        $("backup-status").textContent = `Couldn't restore ${file.name}: ${error.message}`;
       }
-      if (Array.isArray(parsed.words)) config.words = parsed.words.map(String);
-      if (Array.isArray(parsed.banWords)) config.banWords = parsed.banWords.map(String);
-      if (Array.isArray(parsed.authors)) {
-        config.authors = parsed.authors
-          .map((a) => (typeof a === "string" ? { name: a, at: Date.now() } : a))
-          .filter((a) => a && a.name);
-      }
-      if (Array.isArray(parsed.channels)) {
-        config.channels = parsed.channels
-          .map((c) => (typeof c === "string" ? { name: c, at: Date.now() } : c))
-          .filter((c) => c && c.name);
-      }
-      render();
-      await persist();
     });
   }
 
@@ -422,7 +484,7 @@
       }
       await sleep(500);
     }
-    throw new Error("Couldn't reach YouTube — open youtube.com, sign in, and try again");
+    throw new Error("Couldn't reach YouTube. Open youtube.com, sign in and try again.");
   }
 
   /** Run one op over a fresh port; resolves with the first message of `until` type. */
@@ -477,7 +539,7 @@
         );
         download(`youtube-subscriptions-${day}.csv`, "text/csv", rows.join("\n") + "\n");
       } else {
-        const doc = { format: "youtube-manager-subscriptions", exported: new Date().toISOString(), channels };
+        const doc = { format: "youtubedaddy-subscriptions", exported: new Date().toISOString(), channels };
         download(`youtube-subscriptions-${day}.json`, "application/json", JSON.stringify(doc, null, 2));
       }
       subsStatus(`Exported ${channels.length} subscriptions.`);
@@ -549,11 +611,72 @@
     $("subs-stop").addEventListener("click", () => subsPort?.postMessage({ op: "stop" }));
   }
 
+  /* -------------------------------------------------------------------- sync */
+
+  function ago(at) {
+    if (!at) return "not yet";
+    const mins = Math.round((Date.now() - at) / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins} min ago`;
+    return new Date(at).toLocaleString();
+  }
+
+  function showSync(state, note) {
+    $("sync-out").hidden = !!state;
+    $("sync-in").hidden = !state;
+    let text = state ? `Signed in as ${state.user}. Last synced ${ago(state.at)}.` : "";
+    if (state && state.error) text += ` Problem: ${state.error}.`;
+    if (note) text = text ? `${text} ${note}` : note;
+    $("sync-status").textContent = text;
+  }
+
+  async function syncAsk(message, busyText) {
+    for (const id of ["sync-signin", "sync-signup", "sync-now", "sync-signout"]) $(id).disabled = true;
+    if (busyText) $("sync-status").textContent = busyText;
+    try {
+      const reply = await api.runtime.sendMessage(message);
+      if (!reply) return showSync(null, "Sync isn't running. Reload the add-on.");
+      if (!reply.ok) {
+        const current = await api.runtime.sendMessage({ sync: "status" });
+        return showSync(current && current.status, reply.error);
+      }
+      showSync(reply.status);
+    } finally {
+      for (const id of ["sync-signin", "sync-signup", "sync-now", "sync-signout"]) $(id).disabled = false;
+    }
+  }
+
+  function credentials() {
+    const user = $("sync-user").value.trim();
+    const password = $("sync-pass").value;
+    if (!user || password.length < 8) {
+      $("sync-status").textContent = "Enter a name and a password of at least 8 characters.";
+      return null;
+    }
+    $("sync-pass").value = "";
+    return { user, password };
+  }
+
+  function wireSync() {
+    $("sync-signin").addEventListener("click", () => {
+      const c = credentials();
+      if (c) syncAsk({ sync: "signin", ...c }, "Signing in…");
+    });
+    $("sync-signup").addEventListener("click", () => {
+      const c = credentials();
+      if (c) syncAsk({ sync: "signup", ...c }, "Signing up…");
+    });
+    $("sync-now").addEventListener("click", () => syncAsk({ sync: "now" }, "Syncing…"));
+    $("sync-signout").addEventListener("click", () => syncAsk({ sync: "signout" }));
+    syncAsk({ sync: "status" });
+  }
+
   store.load().then((loaded) => {
     config = loaded;
     render();
     wire();
     wireSubs();
+    wireSync();
     // Another tab (or the SHUT UP button in a live chat) may write while this
     // page is open; keep it truthful rather than stale.
     store.onChange((next) => {

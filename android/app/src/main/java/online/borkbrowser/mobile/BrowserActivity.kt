@@ -1203,7 +1203,7 @@ class BrowserActivity : AppCompatActivity(), Addons.Host {
         list.addView(Ui.divider(this))
 
         // Every add-on with a toolbar button: uBlock Origin's popup, Dark
-        // Reader's switch, YouTube Manager's quick settings.
+        // Reader's switch, YoutubeDaddy's quick settings.
         val actions = app.addons.withActions
         if (actions.isNotEmpty()) {
             list.addView(Ui.header(this, "Add-ons"))
@@ -1405,7 +1405,6 @@ class BrowserActivity : AppCompatActivity(), Addons.Host {
             "https://m.youtube.com/" to "YouTube",
             "https://en.m.wikipedia.org/" to "Wikipedia",
             "https://duckduckgo.com/" to "DuckDuckGo",
-            "https://news.ycombinator.com/" to "Hacker News",
             "https://www.openstreetmap.org/" to "OpenStreetMap",
             "https://borkbrowser.online/" to "bork",
         ).forEach { (url, title) -> store.addBookmark(url, title) }
