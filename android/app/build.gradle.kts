@@ -15,7 +15,7 @@ val releaseKey = rootProject.file("keystore.properties").takeIf { it.exists() }?
 
 // Pinned on purpose: GeckoView's API moves between majors, and the
 // extension/prompt delegates this app implements are written against this one.
-val geckoviewVersion = "158.0.20261007201254"
+val geckoviewVersion = "160.0.20261116130455"
 
 android {
     namespace = "online.borkbrowser.mobile"
@@ -29,8 +29,8 @@ android {
         applicationId = "online.borkbrowser.mobile"
         minSdk = 26
         targetSdk = 36
-        versionCode = 3
-        versionName = "0.1.2"
+        versionCode = 4
+        versionName = "0.1.3"
     }
 
     signingConfigs {
