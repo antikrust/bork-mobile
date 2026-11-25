@@ -1,6 +1,12 @@
 package online.borkbrowser.mobile
 
+import android.app.ActivityManager
 import android.app.Application
+import android.os.Build
+import android.os.Process
+import mozilla.appservices.RustComponentsInitializer
+import mozilla.appservices.viaduct.RustHttpConfig
+import mozilla.components.lib.fetch.httpurlconnection.HttpURLConnectionClient
 import org.mozilla.geckoview.ContentBlocking
 import org.mozilla.geckoview.GeckoRuntime
 import org.mozilla.geckoview.GeckoRuntimeSettings
@@ -11,7 +17,8 @@ import org.mozilla.geckoview.GeckoRuntimeSettings
  * What the desktop build takes out, this one never puts in: no crash handler
  * is registered (so nothing is ever reported), Glean is never initialised (so
  * nothing is ever uploaded), and the telemetry pref is switched off on top of
- * that for anything inside Gecko that reads it.
+ * that for anything inside Gecko that reads it. The account libraries record
+ * into Glean too, which stays uninitialised for them just the same.
  */
 class BorkApplication : Application() {
 
@@ -21,6 +28,8 @@ class BorkApplication : Application() {
         private set
     lateinit var addons: Addons
         private set
+    lateinit var account: Account
+        private set
 
     val runtime: GeckoRuntime by lazy { createRuntime() }
 
@@ -28,8 +37,29 @@ class BorkApplication : Application() {
         super.onCreate()
         instance = this
         settings = Settings(this)
-        store = Store(this)
         addons = Addons(this)
+        // GeckoView's content processes are this app too and start here as
+        // well. History, bookmarks and the account belong to the main one:
+        // a second Places or account manager per tab process would fight it.
+        if (!isMainProcess()) return
+        // The Rust libraries behind Places and the account come first, then
+        // the one HTTP client they all make requests through.
+        RustComponentsInitializer.init()
+        RustHttpConfig.setClient(lazy { HttpURLConnectionClient() })
+        store = Store(this)
+        account = Account(this)
+        account.start()
+    }
+
+    private fun isMainProcess(): Boolean {
+        val name = if (Build.VERSION.SDK_INT >= 28) {
+            getProcessName()
+        } else {
+            val pid = Process.myPid()
+            (getSystemService(ACTIVITY_SERVICE) as ActivityManager).runningAppProcesses
+                ?.firstOrNull { it.pid == pid }?.processName
+        }
+        return name == null || name == packageName
     }
 
     private fun createRuntime(): GeckoRuntime {

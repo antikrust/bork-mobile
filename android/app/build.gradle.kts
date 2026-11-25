@@ -17,6 +17,12 @@ val releaseKey = rootProject.file("keystore.properties").takeIf { it.exists() }?
 // extension/prompt delegates this app implements are written against this one.
 val geckoviewVersion = "160.0.20261116130455"
 
+// The bork account: Mozilla's account and sync libraries, from the release
+// that goes with that GeckoView. android-components and application-services
+// are versioned apart (160.0.x each) but released together.
+val componentsVersion = "160.0.1"
+val appServicesVersion = "160.0"
+
 android {
     namespace = "online.borkbrowser.mobile"
     compileSdk {
@@ -31,6 +37,9 @@ android {
         targetSdk = 36
         versionCode = 4
         versionName = "0.1.3"
+        // GeckoView ships for arm64 only here, and application-services'
+        // native library would otherwise bring all four architectures.
+        ndk { abiFilters += "arm64-v8a" }
     }
 
     signingConfigs {
@@ -76,6 +85,13 @@ android {
     }
 }
 
+// Glean's native half is already inside GeckoView's libxul.so; the separate
+// copy the account libraries pull in clashes with it (as in Firefox for
+// Android, which leaves it out the same way).
+configurations.all {
+    exclude(group = "org.mozilla.telemetry", module = "glean-native")
+}
+
 dependencies {
     implementation("org.mozilla.geckoview:geckoview-arm64-v8a:$geckoviewVersion")
     implementation("androidx.core:core-ktx:1.13.1")
@@ -83,4 +99,11 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     implementation("com.google.android.material:material:1.12.0")
+
+    implementation("org.mozilla.components:service-firefox-accounts:$componentsVersion")
+    implementation("org.mozilla.components:lib-fetch-httpurlconnection:$componentsVersion")
+    implementation("org.mozilla.appservices:places:$appServicesVersion")
+    implementation("org.mozilla.appservices:viaduct:$appServicesVersion")
+    implementation("org.mozilla.appservices:init_rust_components:$appServicesVersion")
+    implementation("androidx.lifecycle:lifecycle-process:2.11.0")
 }

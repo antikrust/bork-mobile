@@ -48,6 +48,11 @@ class Settings(context: Context) {
         get() = prefs.getBoolean("zen", false)
         set(value) = prefs.edit { putBoolean("zen", value) }
 
+    /** The bork account and sync (Account.kt); off until asked for. */
+    var accountEnabled: Boolean
+        get() = prefs.getBoolean("accountEnabled", false)
+        set(value) = prefs.edit { putBoolean("accountEnabled", value) }
+
     /** Bumped when the bundled add-on set changes, so it is reinstalled once. */
     var addonsInstalledVersion: Int
         get() = prefs.getInt("addonsInstalledVersion", 0)

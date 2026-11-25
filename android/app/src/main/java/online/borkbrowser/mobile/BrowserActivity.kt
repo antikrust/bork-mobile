@@ -814,6 +814,13 @@ class BrowserActivity : AppCompatActivity(), Addons.Host {
         }
 
         override fun onLoadRequest(session: GeckoSession, request: NavigationDelegate.LoadRequest): GeckoResult<AllowOrDeny> {
+            if (app.account.isRedirect(request.uri)) {
+                // The account's sign-in pages are done; the code is in the URL.
+                app.account.finish(request.uri)
+                Toast.makeText(this@BrowserActivity, "Signed in to your bork account", Toast.LENGTH_SHORT).show()
+                runOnUiThread { if (tab in tabs) closeTab(tab) }
+                return GeckoResult.fromValue(AllowOrDeny.DENY)
+            }
             val uri = Uri.parse(request.uri)
             val scheme = uri.scheme?.lowercase() ?: return GeckoResult.fromValue(AllowOrDeny.ALLOW)
             if (scheme in UrlInput.GECKO_SCHEMES) return GeckoResult.fromValue(AllowOrDeny.ALLOW)
@@ -1248,6 +1255,7 @@ class BrowserActivity : AppCompatActivity(), Addons.Host {
             }
             REQ_SETTINGS -> {
                 placeToolbar()
+                data?.getStringExtra(SettingsActivity.EXTRA_OPEN)?.let { newTab(it) }
                 if (data?.getBooleanExtra(SettingsActivity.EXTRA_CLEARED, false) == true) {
                     // Everything stored is gone, so are the tabs that showed it.
                     closeTabsSilently(tabs.toList())

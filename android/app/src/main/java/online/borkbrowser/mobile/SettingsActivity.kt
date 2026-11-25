@@ -16,6 +16,17 @@ class SettingsActivity : Screen() {
         render()
     }
 
+    override fun onResume() {
+        super.onResume()
+        app.account.onChange = { render() }
+        render()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        app.account.onChange = null
+    }
+
     private fun render() {
         body.removeAllViews()
         body.addView(Ui.header(this, "Browsing"))
@@ -47,6 +58,8 @@ class SettingsActivity : Screen() {
             settings.javascript = it
             app.runtime.settings.javaScriptEnabled = it
         })
+
+        addAccount()
 
         body.addView(Ui.header(this, "Privacy"))
         body.addView(note(
@@ -85,6 +98,48 @@ class SettingsActivity : Screen() {
         if (cleared) setResult(RESULT_OK, Intent().putExtra(EXTRA_CLEARED, true))
     }
 
+    /** The bork account (Account.kt): bookmarks and history on every bork. */
+    private fun addAccount() {
+        val account = app.account
+        body.addView(Ui.header(this, "bork account"))
+        body.addView(Ui.switchRow(this, "Use a bork account", "Bookmarks and history, the same on every bork", account.enabled) {
+            account.setEnabled(it)
+            render()
+        })
+        if (!account.enabled) return
+        when {
+            !account.signedIn -> body.addView(Ui.row(this, "Sign in or create an account", R.drawable.ic_lock) {
+                account.beginSignIn { url ->
+                    if (url == null) {
+                        Toast.makeText(this, "Can't reach borkbrowser.online", Toast.LENGTH_SHORT).show()
+                    } else {
+                        setResult(RESULT_OK, Intent().putExtra(EXTRA_OPEN, url))
+                        finish()
+                    }
+                }
+            })
+            account.needsReauth -> body.addView(Ui.row(this, "Sign in again", R.drawable.ic_lock, detail = account.email) {
+                account.beginSignIn { url -> url?.let { setResult(RESULT_OK, Intent().putExtra(EXTRA_OPEN, it)); finish() } }
+            })
+            else -> {
+                val status = when {
+                    account.syncing -> "Syncing"
+                    account.lastError != null -> "Last sync failed: ${account.lastError}"
+                    else -> "Signed in"
+                }
+                body.addView(Ui.row(this, account.email ?: "bork account", R.drawable.ic_lock, detail = status))
+                body.addView(Ui.row(this, "Sync now", R.drawable.ic_reload) { account.syncNow() })
+                body.addView(Ui.row(this, "Sign out", R.drawable.ic_close, detail = "What is on this phone stays") {
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle("Sign out?")
+                        .setPositiveButton("Sign out") { _, _ -> account.signOut() }
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .show()
+                })
+            }
+        }
+    }
+
     private fun confirm(title: String, message: String, action: () -> Unit) {
         MaterialAlertDialogBuilder(this)
             .setTitle(title)
@@ -96,5 +151,7 @@ class SettingsActivity : Screen() {
 
     companion object {
         const val EXTRA_CLEARED = "cleared"
+        /** A page for the browser to open on return: the account's sign-in. */
+        const val EXTRA_OPEN = "open"
     }
 }
