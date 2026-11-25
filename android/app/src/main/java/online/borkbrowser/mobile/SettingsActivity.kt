@@ -129,6 +129,10 @@ class SettingsActivity : Screen() {
                 }
                 body.addView(Ui.row(this, account.email ?: "bork account", R.drawable.ic_lock, detail = status))
                 body.addView(Ui.row(this, "Sync now", R.drawable.ic_reload) { account.syncNow() })
+                body.addView(Ui.switchRow(this, "Add-ons from your other borks", "After each sync, offers to add what your desktop has", settings.addonSync) {
+                    settings.addonSync = it
+                    if (it) app.addonSync.resetDeclined() // switched back on: ask about all of them again
+                })
                 body.addView(Ui.row(this, "Sign out", R.drawable.ic_close, detail = "What is on this phone stays") {
                     MaterialAlertDialogBuilder(this)
                         .setTitle("Sign out?")

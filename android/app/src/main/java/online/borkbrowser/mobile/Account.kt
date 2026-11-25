@@ -37,6 +37,7 @@ import mozilla.components.service.fxa.sync.SyncStatusObserver
  * BrowserActivity catches and hands to [finish] instead of loading.
  *
  * What syncs: history and bookmarks, straight out of Store's Places database.
+ * After each sync, AddonSync offers the desktop's add-ons.
  */
 class Account(private val app: BorkApplication) {
 
@@ -146,6 +147,10 @@ class Account(private val app: BorkApplication) {
             syncing = false
             lastError = null
             changed()
+            // The desktop's add-ons ride along with every finished sync.
+            manager?.authenticatedAccount()?.let { account ->
+                scope.launch { app.addonSync.run(account) }
+            }
         }
 
         override fun onError(error: Exception?) {

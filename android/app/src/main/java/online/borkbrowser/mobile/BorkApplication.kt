@@ -30,6 +30,8 @@ class BorkApplication : Application() {
         private set
     lateinit var account: Account
         private set
+    lateinit var addonSync: AddonSync
+        private set
 
     val runtime: GeckoRuntime by lazy { createRuntime() }
 
@@ -47,6 +49,7 @@ class BorkApplication : Application() {
         RustComponentsInitializer.init()
         RustHttpConfig.setClient(lazy { HttpURLConnectionClient() })
         store = Store(this)
+        addonSync = AddonSync(this)
         account = Account(this)
         account.start()
     }

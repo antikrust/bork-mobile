@@ -53,6 +53,11 @@ class Settings(context: Context) {
         get() = prefs.getBoolean("accountEnabled", false)
         set(value) = prefs.edit { putBoolean("accountEnabled", value) }
 
+    /** Offer the desktop's add-ons here after each sync (AddonSync.kt). */
+    var addonSync: Boolean
+        get() = prefs.getBoolean("addonSync", true)
+        set(value) = prefs.edit { putBoolean("addonSync", value) }
+
     /** Bumped when the bundled add-on set changes, so it is reinstalled once. */
     var addonsInstalledVersion: Int
         get() = prefs.getInt("addonsInstalledVersion", 0)
