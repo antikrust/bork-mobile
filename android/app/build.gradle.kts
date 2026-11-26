@@ -35,8 +35,8 @@ android {
         applicationId = "online.borkbrowser.mobile"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = "0.1.3"
+        versionCode = 5
+        versionName = "0.1.4"
         // GeckoView ships for arm64 only here, and application-services'
         // native library would otherwise bring all four architectures.
         ndk { abiFilters += "arm64-v8a" }
